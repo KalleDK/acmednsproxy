@@ -1,23 +1,11 @@
-package acmednsproxy
+package auth
 
 import (
 	"encoding/json"
-	"errors"
 	"io"
 
 	"golang.org/x/crypto/bcrypt"
 )
-
-var (
-	ErrUnauthorized  = errors.New("unauthorized")
-	ErrEmptyFile     = errors.New("empty file")
-	ErrUnknownDomain = errors.New("unknown domain")
-	ErrUnknownUser   = errors.New("unknown user")
-)
-
-type UserAuthenticator interface {
-	VerifyPermissions(user string, password string, domain string) (err error)
-}
 
 type UserTable map[string][]byte
 
@@ -66,7 +54,7 @@ func (a *SimpleUserAuthenticator) AddPermission(user string, password string, do
 
 func (a *SimpleUserAuthenticator) RemovePermission(user string, domain string) (err error) {
 	if a.Permissions == nil {
-		return ErrEmptyFile
+		return ErrUnknownDomain
 	}
 
 	users, ok := a.Permissions[domain]
