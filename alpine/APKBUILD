@@ -22,7 +22,7 @@ check() {
 
 build() {
     cd ${srcdir}/acmednsproxy-main
-    go build -o ${builddir}/${pkgname} ./cmd/${pkgname}
+    go build -ldflags="-X 'github.com/KalleDK/acmednsproxy/cmd/acmednsproxy/cmd.defaultAuthFile=/etc/acmednsproxy/auth.json' -X 'github.com/KalleDK/acmednsproxy/cmd/acmednsproxy/cmd.defaultProviderFile=/etc/acmednsproxy/providers.json' " -o ${builddir}/${pkgname} ./cmd/${pkgname}
     go build -o ${builddir}/htcrypt ./cmd/htcrypt
 }
 

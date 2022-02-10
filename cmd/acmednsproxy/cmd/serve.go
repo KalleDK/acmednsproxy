@@ -19,6 +19,9 @@ var providerFile string
 var certFile string
 var keyFile string
 
+var defaultAuthFile = "auth.json"
+var defaultProviderFile = "providers.json"
+
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
@@ -55,8 +58,8 @@ func init() {
 	// and all subcommands, e.g.:
 	serveCmd.PersistentFlags().StringVarP(&certFile, "cert", "c", "", "A help for foo")
 	serveCmd.PersistentFlags().StringVarP(&keyFile, "key", "k", "", "A help for foo")
-	serveCmd.PersistentFlags().StringVarP(&authFile, "auth", "a", "auth.json", "A help for foo")
-	serveCmd.PersistentFlags().StringVarP(&providerFile, "providers", "p", "providers.json", "A help for foo")
+	serveCmd.PersistentFlags().StringVarP(&authFile, "auth", "a", defaultAuthFile, "A help for foo")
+	serveCmd.PersistentFlags().StringVarP(&providerFile, "providers", "p", defaultProviderFile, "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
