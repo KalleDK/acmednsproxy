@@ -1,0 +1,85 @@
+on:
+  push:
+    tags:
+    - 'v*'
+
+name: Make Relase
+
+jobs:
+  create_release:
+    name: Create Relase
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+  alpine:
+    name: Build APK
+    needs: create_release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+    - name: Build
+      uses: ./.github/actions/alpine
+      with:
+        abuild_key: ${{ secrets.ABUILD_KEY }}
+        abuild_key_pub: ${{ secrets.ABUILD_KEY_PUB }}
+        abuild_key_name: alpine@k-moeller.dk-5ff315f1
+        abuild_pkg_ver: ${{ github.ref }}
+    - name: Find APK
+      id: pack
+      run: |
+        ASSET_NAME=$(find ${{ github.workspace }}/packages | grep apk | grep -v tool | grep -v openrc | sed 's#.*/##')
+        ASSET_PATH=$(find ${{ github.workspace }}/packages | grep apk | grep -v tool| grep -v openrc)        
+        ASSET_RC_NAME=$(find ${{ github.workspace }}/packages | grep apk | grep openrc | sed 's#.*/##')
+        ASSET_RC_PATH=$(find ${{ github.workspace }}/packages | grep apk | grep openrc)
+        ASSET_TOOL_NAME=$(find ${{ github.workspace }}/packages | grep apk | grep tool | sed 's#.*/##')
+        ASSET_TOOL_PATH=$(find ${{ github.workspace }}/packages | grep apk | grep tool)
+        echo "::set-output name=asset_name::${ASSET_NAME}"
+        echo "::set-output name=asset_path::${ASSET_PATH}"
+        echo "::set-output name=asset_rc_name::${ASSET_RC_NAME}"
+        echo "::set-output name=asset_rc_path::${ASSET_RC_PATH}"
+        echo "::set-output name=asset_tool_name::${ASSET_TOOL_NAME}"
+        echo "::set-output name=asset_tool_path::${ASSET_TOOL_PATH}"
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: acmednsproxy_apk
+        path: ${{ github.workspace }}/packages
+    - name: Uploade Release File
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create_release.outputs.upload_url }}
+        asset_name: ${{ steps.pack.outputs.asset_name }}
+        asset_path: ${{ steps.pack.outputs.asset_path }}
+        asset_content_type: "application/octet-stream"
+    - name: Uploade Release RC File
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create_release.outputs.upload_url }}
+        asset_name: ${{ steps.pack.outputs.asset_rc_name }}
+        asset_path: ${{ steps.pack.outputs.asset_rc_path }}
+        asset_content_type: "application/octet-stream"
+    - name: Uploade Release Tool File
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create_release.outputs.upload_url }}
+        asset_name: ${{ steps.pack.outputs.asset_tool_name }}
+        asset_path: ${{ steps.pack.outputs.asset_tool_path }}
+        asset_content_type: "application/octet-stream"
