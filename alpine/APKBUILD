@@ -8,6 +8,8 @@ license="MIT"
 source="${pkgname}-${pkgver}.tar.gz::https://github.com/KalleDK/${pkgname}/archive/v${pkgver}.tar.gz
         auth.json
         providers.json
+        openrc/conf/${pkgname}
+        openrc/init/${pkgname}
         "
 builddir="${srcdir}/${pkgname}-${pkgver}"
 makedepends="go"
@@ -18,13 +20,14 @@ check() {
 }
 
 build() {
-    go build -o bin/${pkgname} ./cmd/${pkgname}
-    go build -o bin/htcrypt ./cmd/htcrypt
+    cd ${srcdir}/acmednsproxy-main
+    go build -o ${builddir}/${pkgname} ./cmd/${pkgname}
+    go build -o ${builddir}/htcrypt ./cmd/htcrypt
 }
 
 package() {
-    install -Dm755 "bin/${pkgname}" "${pkgdir}/usr/bin/${pkgname}"
-        
+    install -Dm755 "${builddir}/${pkgname}" "${pkgdir}/usr/bin/${pkgname}"
+
     install -Dm640 "$srcdir"/auth.json "${pkgdir}/etc/${pkgname}/auth.json"
     install -Dm640 "$srcdir"/providers.json "${pkgdir}/etc/${pkgname}/providers.json"
 
@@ -32,8 +35,9 @@ package() {
     install -Dm644 "${srcdir}/openrc/conf/${pkgname}" "${pkgdir}/etc/conf.d/${pkgname}"
 
     install -Dm640 "alpine"
-    install -Dm755 "bin/htcrypt" "${pkgdir}/usr/bin/htcrypt"
+    install -Dm755 "${builddir}/htcrypt" "${pkgdir}/usr/bin/htcrypt"
 }
+
 
 tools() {
         amove usr/bin/htcrypt
