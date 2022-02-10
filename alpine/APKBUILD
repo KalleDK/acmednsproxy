@@ -9,8 +9,8 @@ license="MIT"
 source="${pkgname}-${pkgver}.tar.gz::https://github.com/KalleDK/${pkgname}/archive/refs/heads/main.tar.gz
         auth.json
         providers.json
-        openrc/conf/${pkgname}
-        openrc/init/${pkgname}
+        ${pkgname}.initd
+        ${pkgname}.confd
         "
 builddir="${srcdir}/${pkgname}-${pkgver}"
 makedepends="go"
@@ -32,8 +32,8 @@ package() {
     install -Dm640 "$srcdir"/auth.json "${pkgdir}/etc/${pkgname}/auth.json"
     install -Dm640 "$srcdir"/providers.json "${pkgdir}/etc/${pkgname}/providers.json"
 
-    install -Dm755 "${srcdir}/openrc/init/${pkgname}" "${pkgdir}/etc/init.d/${pkgname}"
-    install -Dm644 "${srcdir}/openrc/conf/${pkgname}" "${pkgdir}/etc/conf.d/${pkgname}"
+    install -Dm755 "${srcdir}/${pkgname}.initd" "${pkgdir}/etc/init.d/${pkgname}"
+    install -Dm644 "${srcdir}/${pkgname}.confd" "${pkgdir}/etc/conf.d/${pkgname}"
 
     install -Dm640 "alpine"
     install -Dm755 "${builddir}/htcrypt" "${pkgdir}/usr/bin/htcrypt"
