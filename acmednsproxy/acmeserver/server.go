@@ -77,7 +77,7 @@ func (s *Server) ReloadConfig() (err error) {
 	return nil
 }
 
-func New(authfile string, providerfile string) Server {
+func New(authfile string, providerfile string, certFile string, keyFile string) Server {
 
 	p, err := loadproviderFile(providerfile)
 	if err != nil {
@@ -92,6 +92,8 @@ func New(authfile string, providerfile string) Server {
 	return Server{
 		AuthFile:     authfile,
 		ProviderFile: providerfile,
+		CertFile:     certFile,
+		KeyFile:      keyFile,
 		Auth:         a,
 		Providers:    p,
 	}
