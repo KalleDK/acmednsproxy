@@ -19,5 +19,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: "*.apk"
+        files: |
+          acmednsproxy-tools-0.0.10-r1.apk
+          "*.apk"
           

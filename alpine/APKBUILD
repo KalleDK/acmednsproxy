@@ -1,3 +1,5 @@
+# Contributor: Kalle M. Aagaard <alpine@k-moeller.dk>
+# Maintainer: Kalle M. Aagaard <alpine@k-moeller.dk>
 pkgname=acmednsproxy
 pkgver=0.0.4
 pkgrel=1
