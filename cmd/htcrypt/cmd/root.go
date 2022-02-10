@@ -21,6 +21,8 @@ import (
 
 var authFile string
 
+const defaultAuthFile = "auth.json"
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "htcrypt",
@@ -48,6 +50,6 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVarP(&authFile, "auth", "a", "auth.json", "config file")
+	rootCmd.PersistentFlags().StringVarP(&authFile, "auth", "a", defaultAuthFile, "config file")
 
 }
