@@ -16,6 +16,8 @@ import (
 
 var authFile string
 var providerFile string
+var certFile string
+var keyFile string
 
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
@@ -31,7 +33,7 @@ to quickly create a Cobra application.`,
 		c := make(chan os.Signal, 1)
 		signal.Reset(syscall.SIGHUP)
 		signal.Notify(c, syscall.SIGHUP)
-		s := acmeserver.New(authFile, providerFile)
+		s := acmeserver.New(authFile, providerFile, certFile, keyFile)
 
 		go func() {
 			for range c {
@@ -51,6 +53,8 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
+	serveCmd.PersistentFlags().StringVarP(&certFile, "cert", "c", "certificate.crt", "A help for foo")
+	serveCmd.PersistentFlags().StringVarP(&keyFile, "key", "k", "certificate.key", "A help for foo")
 	serveCmd.PersistentFlags().StringVarP(&authFile, "auth", "a", "auth.json", "A help for foo")
 	serveCmd.PersistentFlags().StringVarP(&providerFile, "providers", "p", "providers.json", "A help for foo")
 

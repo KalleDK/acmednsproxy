@@ -44,6 +44,8 @@ func loadproviderFile(providerFile string) (p providers.Providers, err error) {
 type Server struct {
 	AuthFile     string
 	ProviderFile string
+	CertFile     string
+	KeyFile      string
 	Auth         auth.SimpleUserAuthenticator
 	Providers    providers.Providers
 }
@@ -54,7 +56,12 @@ func (s *Server) Serve() {
 		log.Panic(err)
 	}
 
-	http.ListenAndServe(":8080", handler)
+	if s.CertFile == "" {
+		http.ListenAndServe(":8080", handler)
+	} else {
+		http.ListenAndServeTLS(":9090", s.CertFile, s.KeyFile, handler)
+	}
+
 }
 
 func (s *Server) ReloadConfig() (err error) {
