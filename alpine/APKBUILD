@@ -29,13 +29,12 @@ build() {
 package() {
     install -Dm755 "${builddir}/${pkgname}" "${pkgdir}/usr/bin/${pkgname}"
 
-    install -Dm640 "$srcdir"/auth.json "${pkgdir}/etc/${pkgname}/auth.json"
-    install -Dm640 "$srcdir"/providers.json "${pkgdir}/etc/${pkgname}/providers.json"
+    install -Dm640 "${srcdir}/auth.json" "${pkgdir}/etc/${pkgname}/auth.json"
+    install -Dm640 "${srcdir}/providers.json" "${pkgdir}/etc/${pkgname}/providers.json"
 
     install -Dm755 "${srcdir}/${pkgname}.initd" "${pkgdir}/etc/init.d/${pkgname}"
     install -Dm644 "${srcdir}/${pkgname}.confd" "${pkgdir}/etc/conf.d/${pkgname}"
 
-    install -Dm640 "alpine"
     install -Dm755 "${builddir}/htcrypt" "${pkgdir}/usr/bin/htcrypt"
 }
 
