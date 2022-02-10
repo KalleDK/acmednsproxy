@@ -58,10 +58,14 @@ func (s *Server) Serve() {
 
 	if s.CertFile == "" {
 		log.Print("http")
-		http.ListenAndServe(":8080", handler)
+		if err := http.ListenAndServe(":8080", handler); err != nil {
+			log.Panic(err)
+		}
 	} else {
 		log.Print("https")
-		http.ListenAndServeTLS(":9090", s.CertFile, s.KeyFile, handler)
+		if err := http.ListenAndServeTLS(":9090", s.CertFile, s.KeyFile, handler); err != nil {
+			log.Panic(err)
+		}
 	}
 
 }
