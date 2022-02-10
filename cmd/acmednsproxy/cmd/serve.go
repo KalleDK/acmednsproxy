@@ -41,7 +41,7 @@ to quickly create a Cobra application.`,
 				s.ReloadConfig()
 			}
 		}()
-
+		log.Print("Starting server")
 		s.Serve()
 	},
 }
@@ -53,8 +53,8 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	serveCmd.PersistentFlags().StringVarP(&certFile, "cert", "c", "certificate.crt", "A help for foo")
-	serveCmd.PersistentFlags().StringVarP(&keyFile, "key", "k", "certificate.key", "A help for foo")
+	serveCmd.PersistentFlags().StringVarP(&certFile, "cert", "c", "", "A help for foo")
+	serveCmd.PersistentFlags().StringVarP(&keyFile, "key", "k", "", "A help for foo")
 	serveCmd.PersistentFlags().StringVarP(&authFile, "auth", "a", "auth.json", "A help for foo")
 	serveCmd.PersistentFlags().StringVarP(&providerFile, "providers", "p", "providers.json", "A help for foo")
 

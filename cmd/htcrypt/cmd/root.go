@@ -21,7 +21,7 @@ import (
 
 var authFile string
 
-const defaultAuthFile = "auth.json"
+var defaultAuthFile = "auth.json"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{

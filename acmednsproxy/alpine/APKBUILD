@@ -1,0 +1,40 @@
+pkgname=acmednsproxy
+pkgver=0.0.4
+pkgrel=1
+pkgdesc="A small certmgr service"
+url="https://github.com/KalleDK/${pkgname}/"
+arch="all"
+license="MIT"
+source="${pkgname}-${pkgver}.tar.gz::https://github.com/KalleDK/${pkgname}/archive/v${pkgver}.tar.gz
+        auth.json
+        providers.json
+        "
+builddir="${srcdir}/${pkgname}-${pkgver}"
+makedepends="go"
+subpackages="$pkgname-tools $pkgname-openrc"
+
+check() {
+    true
+}
+
+build() {
+    go build -o bin/${pkgname} ./cmd/${pkgname}
+    go build -o bin/htcrypt ./cmd/htcrypt
+}
+
+package() {
+    install -Dm755 "bin/${pkgname}" "${pkgdir}/usr/bin/${pkgname}"
+        
+    install -Dm640 "$srcdir"/auth.json "${pkgdir}/etc/${pkgname}/auth.json"
+    install -Dm640 "$srcdir"/providers.json "${pkgdir}/etc/${pkgname}/providers.json"
+
+    install -Dm755 "${srcdir}/openrc/init/${pkgname}" "${pkgdir}/etc/init.d/${pkgname}"
+    install -Dm644 "${srcdir}/openrc/conf/${pkgname}" "${pkgdir}/etc/conf.d/${pkgname}"
+
+    install -Dm640 "alpine"
+    install -Dm755 "bin/htcrypt" "${pkgdir}/usr/bin/htcrypt"
+}
+
+tools() {
+        amove usr/bin/htcrypt
+}

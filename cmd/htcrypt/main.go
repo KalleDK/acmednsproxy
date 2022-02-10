@@ -15,7 +15,9 @@ limitations under the License.
 */
 package main
 
-import "github.com/KalleDK/acmednsproxy/cmd/htcrypt/cmd"
+import (
+	"github.com/KalleDK/acmednsproxy/cmd/htcrypt/cmd"
+)
 
 func main() {
 	cmd.Execute()

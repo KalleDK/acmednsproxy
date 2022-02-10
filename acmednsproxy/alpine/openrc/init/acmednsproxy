@@ -1,0 +1,17 @@
+#!/sbin/openrc-run
+
+name="$SVCNAME"
+supervisor="supervise-daemon"
+command="/usr/bin/$SVCNAME"
+command_args="serve ${ACMEDNSPROXY_OPTS}"
+extra_started_commands="reload"
+
+depend() {
+        need net localmount
+        use logger
+        after firewall
+}
+
+reload() {
+        ${supervisor} ${RC_SVCNAME} --signal HUP
+}
