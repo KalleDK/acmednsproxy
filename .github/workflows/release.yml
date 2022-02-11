@@ -21,6 +21,7 @@ jobs:
         abuild_key_name: alpine@k-moeller.dk-5ff315f1
         abuild_pkg_ver: ${{ github.ref }}
         abuild_pkg_rel: 1
+        abuild_prefix: ./alpine
         abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
     - name: Release
       uses: softprops/action-gh-release@v1
