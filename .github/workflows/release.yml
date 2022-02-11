@@ -19,7 +19,7 @@ jobs:
         abuild_key: ${{ secrets.ABUILD_KEY }}
         abuild_key_pub: ${{ secrets.ABUILD_KEY_PUB }}
         abuild_key_name: alpine@k-moeller.dk-5ff315f1
-        abuild_pkg_ver: ${{ github.ref }}
+        abuild_pkg_ver: ${{ github.ref_name }}
         abuild_pkg_rel: 1
         abuild_prefix: ./alpine
         abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
