@@ -14,7 +14,7 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v2
     - name: Alpine Build APK
-      uses: KalleDK/actions-abuild@v0.0.1
+      uses: KalleDK/actions-abuild@v0.0.2
       with:
         abuild_key: ${{ secrets.ABUILD_KEY }}
         abuild_key_pub: ${{ secrets.ABUILD_KEY_PUB }}
