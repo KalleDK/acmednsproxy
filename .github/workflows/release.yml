@@ -5,19 +5,23 @@ on:
 
 name: Make Relase
 jobs:
+  
+
   alpine:
     name: Build APK
     runs-on: ubuntu-latest
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
-    - name: Build
-      uses: ./.github/actions/alpine
+    - name: Alpine Build APK
+      uses: KalleDK/actions-abuild@v0.0.1
       with:
         abuild_key: ${{ secrets.ABUILD_KEY }}
         abuild_key_pub: ${{ secrets.ABUILD_KEY_PUB }}
         abuild_key_name: alpine@k-moeller.dk-5ff315f1
         abuild_pkg_ver: ${{ github.ref }}
+        abuild_pkg_rel: 1
+        abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
     - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
