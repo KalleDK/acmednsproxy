@@ -1,5 +1,8 @@
 #!/usr/bin/env sh
 
+pwd
+echo ${GITHUB_WORKSPACE}
+env
 export REPODEST="${GITHUB_WORKSPACE}/packages"
 export SRCDEST="${GITHUB_WORKSPACE}/cache/distfiles"
 export PACKAGER_PRIVKEY="/root/${INPUT_ABUILD_KEY_NAME}.rsa"
