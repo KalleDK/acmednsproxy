@@ -16,8 +16,19 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 )
+
+var askPass bool
+
+const output = `
+HTTPREQ_MODE=RAW \
+HTTPREQ_USERNAME=%s \
+HTTPREQ_PASSWORD=%s
+
+`
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
@@ -30,7 +41,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Args: cobra.ExactArgs(2),
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		user := args[0]
 		domain := args[1]
 
@@ -39,7 +50,12 @@ to quickly create a Cobra application.`,
 			return err
 		}
 
-		password, err := getPassword()
+		passFunc := generatePassword
+		if askPass {
+			passFunc = getPassword
+		}
+
+		password, err := passFunc()
 		if err != nil {
 			return err
 		}
@@ -52,6 +68,8 @@ to quickly create a Cobra application.`,
 			return err
 		}
 
+		fmt.Printf(output, user, password)
+
 		return nil
 
 	},
@@ -59,6 +77,7 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(addCmd)
+	addCmd.Flags().BoolVarP(&askPass, "ask-pass", "p", false, "Ask for a password")
 
 	// Here you will define your flags and configuration settings.
 

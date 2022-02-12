@@ -18,7 +18,7 @@ jobs:
         abuild_prefix: ./alpine
         abuild_pkg_ver: ${{ github.ref_name }}
         abuild_pkg_rel: 1
-        abuild_key_name: alpine@k-moeller.dk-62068d1b
+        abuild_key_name:  ${{ secrets.ABUILD_KEY_NAME }}
         abuild_key: ${{ secrets.ABUILD_KEY }}
         abuild_key_pub: ${{ secrets.ABUILD_KEY_PUB }}
     - name: Release
