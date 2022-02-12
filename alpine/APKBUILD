@@ -42,7 +42,9 @@ package() {
 
     # Openrc
     install -Dm755 "${srcdir}/${pkgname}.initd" "${pkgdir}/etc/init.d/${pkgname}"
-    install -Dm644 "${srcdir}/${pkgname}.confd" "${pkgdir}/etc/conf.d/${pkgname}"   
+    install -Dm644 "${srcdir}/${pkgname}.confd" "${pkgdir}/etc/conf.d/${pkgname}"
+
+    install -dm755 "${pkgdir}/var/log/${pkgname}"
 }
 
 

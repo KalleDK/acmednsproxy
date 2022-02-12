@@ -5,6 +5,7 @@ supervisor="supervise-daemon"
 command="/usr/bin/$SVCNAME"
 command_args="serve ${ACMEDNSPROXY_OPTS}"
 extra_started_commands="reload"
+supervise_daemon_args="--stdout '${ACMEDNSPROXY_LOG_FILE:-/var/log/acmednsproxy/proxy.log}' --stderr '${ACMEDNSPROXY_LOG_FILE:-/var/log/acmednsproxy/proxy.log}'"
 
 depend() {
         need net localmount

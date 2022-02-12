@@ -1,1 +1,2 @@
 ACMEDNSPROXY_OPTS="-a /etc/acmednsproxy/auth.json -p /etc/acmednsproxy/providers.json"
+#ACMEDNSPROXY_OPTS="-a /etc/acmednsproxy/auth.json -p /etc/acmednsproxy/providers.json -c /etc/acmednsproxy/server.crt -k /etc/acmednsproxy/server.key"
