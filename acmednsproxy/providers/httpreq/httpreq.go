@@ -1,6 +1,7 @@
 package httpreq
 
 import (
+	"errors"
 	"net/url"
 	"time"
 
@@ -19,9 +20,8 @@ type CFConfig struct {
 	HTTP_TIMEOUT        *int
 }
 
-type HTTPReqLoader struct{}
+func Load(d providers.ConfigDecoder) (challenge.Provider, error) {
 
-func (c HTTPReqLoader) Load(d providers.Decoder) (challenge.Provider, error) {
 	var config CFConfig
 	if err := d.Decode(&config); err != nil {
 		return nil, err
@@ -32,6 +32,9 @@ func (c HTTPReqLoader) Load(d providers.Decoder) (challenge.Provider, error) {
 	url, err := url.Parse(config.Endpoint)
 	if err != nil {
 		return nil, err
+	}
+	if len(url.String()) == 0 {
+		return nil, errors.New("invalid endpoint")
 	}
 
 	conf.Endpoint = url
@@ -66,5 +69,5 @@ func (c HTTPReqLoader) Load(d providers.Decoder) (challenge.Provider, error) {
 }
 
 func init() {
-	providers.AddProviderLoader("httpreq", HTTPReqLoader{})
+	providers.AddLoader("httpreq", providers.LoaderFunc(Load))
 }

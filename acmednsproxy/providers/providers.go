@@ -1,30 +1,44 @@
 package providers
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
-	"io"
-	"strings"
 
 	"github.com/go-acme/lego/v4/challenge"
 )
 
-type Decoder interface {
+type ConfigDecoder interface {
 	Decode(v interface{}) error
 }
 
-type ProviderLoader interface {
-	Load(d Decoder) (challenge.Provider, error)
+type Loader interface {
+	Load(configDecoder ConfigDecoder) (challenge.Provider, error)
 }
 
-var providerMap = map[string]ProviderLoader{}
+type loaderFunc struct {
+	load func(configDecoder ConfigDecoder) (challenge.Provider, error)
+}
 
-func AddProviderLoader(name string, p ProviderLoader) {
+func (f loaderFunc) Load(configDecoder ConfigDecoder) (p challenge.Provider, err error) {
+	p, err = f.load(configDecoder)
+	if err != nil {
+		return
+	}
+	return p, nil
+}
+
+func LoaderFunc(f func(configDecoder ConfigDecoder) (challenge.Provider, error)) Loader {
+	return loaderFunc{
+		load: f,
+	}
+}
+
+var providerMap = map[string]Loader{}
+
+func AddLoader(name string, p Loader) {
 	providerMap[name] = p
 }
 
-func GetProviderLoader(name string) (p ProviderLoader, err error) {
+func GetLoader(name string) (p Loader, err error) {
 	p, ok := providerMap[name]
 	if !ok {
 		return nil, errors.New("invalid provider name")
@@ -33,55 +47,16 @@ func GetProviderLoader(name string) (p ProviderLoader, err error) {
 	return p, nil
 }
 
-type Providers struct {
-	providers map[string]challenge.Provider
-}
-
-func (p *Providers) GetProvider(name string) (challenge.Provider, error) {
-	parts := strings.Split(name, ".")
-	for len(parts) > 0 {
-		sname := strings.Join(parts, ".")
-		pp, ok := p.providers[sname]
-		if !ok {
-			parts = parts[1:]
-			continue
-		}
-		return pp, nil
+func Load(name string, configDecoder ConfigDecoder) (p challenge.Provider, err error) {
+	loader, err := GetLoader(name)
+	if err != nil {
+		return nil, err
 	}
-	return nil, errors.New("missing provider")
-}
 
-type entry struct {
-	Name   string
-	Config json.RawMessage
-}
-
-func LoadProviders(r io.Reader) (p Providers, err error) {
-	var entries map[string]entry
-
-	dec := json.NewDecoder(r)
-
-	if err = dec.Decode(&entries); err != nil {
+	p, err = loader.Load(configDecoder)
+	if err != nil {
 		return
 	}
 
-	p.providers = make(map[string]challenge.Provider)
-
-	for domain, conf := range entries {
-		loader, err := GetProviderLoader(conf.Name)
-		if err != nil {
-			return p, err
-		}
-		pdec := json.NewDecoder(bytes.NewReader([]byte(conf.Config)))
-		provider, err := loader.Load(pdec)
-		if err != nil {
-			return p, err
-		}
-		p.providers[domain] = provider
-	}
 	return p, nil
-}
-
-type ProviderBackend interface {
-	GetProvider(name string) (challenge.Provider, error)
 }

@@ -17,11 +17,9 @@ type CFConfig struct {
 	HTTP_TIMEOUT        *int
 }
 
-type CloudFlareLoader struct{}
-
-func (c CloudFlareLoader) Load(d providers.Decoder) (challenge.Provider, error) {
+func Load(dec providers.ConfigDecoder) (challenge.Provider, error) {
 	var config CFConfig
-	if err := d.Decode(&config); err != nil {
+	if err := dec.Decode(&config); err != nil {
 		return nil, err
 	}
 
@@ -53,5 +51,5 @@ func (c CloudFlareLoader) Load(d providers.Decoder) (challenge.Provider, error) 
 }
 
 func init() {
-	providers.AddProviderLoader("cloudflare", CloudFlareLoader{})
+	providers.AddLoader("cloudflare", providers.LoaderFunc(Load))
 }

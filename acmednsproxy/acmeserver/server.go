@@ -9,9 +9,10 @@ import (
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/auth"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/httphandlers"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
+	"github.com/go-acme/lego/v4/challenge"
 
-	_ "github.com/KalleDK/acmednsproxy/acmednsproxy/providers/cloudflare"
-	_ "github.com/KalleDK/acmednsproxy/acmednsproxy/providers/httpreq"
+	_ "github.com/KalleDK/acmednsproxy/acmednsproxy/providers/all"
+	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers/multi"
 )
 
 func loadAuthFile(authFile string) (a auth.SimpleUserAuthenticator, err error) {
@@ -27,13 +28,13 @@ func loadAuthFile(authFile string) (a auth.SimpleUserAuthenticator, err error) {
 	return a, nil
 }
 
-func loadproviderFile(providerFile string) (p providers.Providers, err error) {
+func loadproviderFile(providerFile string) (p challenge.Provider, err error) {
 	data, err := os.ReadFile(providerFile)
 	if err != nil {
 		return
 	}
 
-	p, err = providers.LoadProviders(bytes.NewReader(data))
+	p, err = providers.Load("multi", multi.JsonConfigDecoder{Reader: bytes.NewReader(data)})
 	if err != nil {
 		return
 	}
@@ -47,11 +48,11 @@ type Server struct {
 	CertFile     string
 	KeyFile      string
 	Auth         auth.SimpleUserAuthenticator
-	Providers    providers.Providers
+	Provider     challenge.Provider
 }
 
 func (s *Server) Serve() {
-	handler, err := httphandlers.NewHandler(&s.Auth, &s.Providers)
+	handler, err := httphandlers.NewHandler(&s.Auth, s.Provider)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -67,7 +68,6 @@ func (s *Server) Serve() {
 			log.Panic(err)
 		}
 	}
-
 }
 
 func (s *Server) ReloadConfig() (err error) {
@@ -101,6 +101,6 @@ func New(authfile string, providerfile string, certFile string, keyFile string) 
 		CertFile:     certFile,
 		KeyFile:      keyFile,
 		Auth:         a,
-		Providers:    p,
+		Provider:     p,
 	}
 }
