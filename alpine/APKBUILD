@@ -23,6 +23,7 @@ check() {
 }
 
 build() {
+    ls -la ${srcdir}
     cd ${srcdir}/acmednsproxy-main
     go build -ldflags=" \
         -X 'github.com/KalleDK/acmednsproxy/cmd/acmednsproxy/cmd.defaultAuthFile=/etc/acmednsproxy/auth.json' \
