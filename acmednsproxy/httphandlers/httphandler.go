@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 
@@ -56,6 +57,9 @@ func verifyPermission(a auth.UserAuthenticator) func(c *gin.Context) {
 		var json messageRaw
 		if err := c.ShouldBindJSON(&json); err == nil {
 			if err := a.VerifyPermissions(user, pass, json.Domain); err != nil {
+				log.Println(user)
+				log.Println(pass)
+				log.Println(json.Domain)
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 				return
 			}
@@ -71,6 +75,9 @@ func verifyPermission(a auth.UserAuthenticator) func(c *gin.Context) {
 		}
 
 		if err := a.VerifyPermissions(user, pass, dns01.UnFqdn(jsondef.FQDN)); err != nil {
+			log.Println(user)
+			log.Println(pass)
+			log.Println(dns01.UnFqdn(jsondef.FQDN))
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
