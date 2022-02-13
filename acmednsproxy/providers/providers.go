@@ -6,19 +6,25 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 )
 
+type ProviderSolved interface {
+	challenge.Provider
+	CreateRecord(fqdn, value string) error
+	RemoveRecord(fqdn, value string) error
+}
+
 type ConfigDecoder interface {
 	Decode(v interface{}) error
 }
 
 type Loader interface {
-	Load(configDecoder ConfigDecoder) (challenge.Provider, error)
+	Load(configDecoder ConfigDecoder) (ProviderSolved, error)
 }
 
 type loaderFunc struct {
-	load func(configDecoder ConfigDecoder) (challenge.Provider, error)
+	load func(configDecoder ConfigDecoder) (ProviderSolved, error)
 }
 
-func (f loaderFunc) Load(configDecoder ConfigDecoder) (p challenge.Provider, err error) {
+func (f loaderFunc) Load(configDecoder ConfigDecoder) (p ProviderSolved, err error) {
 	p, err = f.load(configDecoder)
 	if err != nil {
 		return
@@ -26,7 +32,7 @@ func (f loaderFunc) Load(configDecoder ConfigDecoder) (p challenge.Provider, err
 	return p, nil
 }
 
-func LoaderFunc(f func(configDecoder ConfigDecoder) (challenge.Provider, error)) Loader {
+func LoaderFunc(f func(configDecoder ConfigDecoder) (ProviderSolved, error)) Loader {
 	return loaderFunc{
 		load: f,
 	}
@@ -47,7 +53,7 @@ func GetLoader(name string) (p Loader, err error) {
 	return p, nil
 }
 
-func Load(name string, configDecoder ConfigDecoder) (p challenge.Provider, err error) {
+func Load(name string, configDecoder ConfigDecoder) (p ProviderSolved, err error) {
 	loader, err := GetLoader(name)
 	if err != nil {
 		return nil, err

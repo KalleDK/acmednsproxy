@@ -5,7 +5,6 @@ import (
 	"io"
 
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
-	"github.com/go-acme/lego/v4/challenge"
 	"gopkg.in/yaml.v3"
 )
 
@@ -21,7 +20,7 @@ type yamlentry struct {
 
 func (j YamlConfigDecoder) Decode(v interface{}) (err error) {
 
-	vp, ok := v.(*map[string]challenge.Provider)
+	vp, ok := v.(*map[string]providers.ProviderSolved)
 	if !ok {
 		return errors.New("invalid type")
 	}
@@ -32,7 +31,7 @@ func (j YamlConfigDecoder) Decode(v interface{}) (err error) {
 		return
 	}
 
-	pm := map[string]challenge.Provider{}
+	pm := map[string]providers.ProviderSolved{}
 
 	for _, entry := range entries {
 		provider, err := providers.Load(entry.Type, &entry.Config)

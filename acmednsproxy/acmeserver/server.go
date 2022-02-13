@@ -9,7 +9,6 @@ import (
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/auth"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/httphandlers"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
-	"github.com/go-acme/lego/v4/challenge"
 
 	_ "github.com/KalleDK/acmednsproxy/acmednsproxy/providers/all"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers/multi"
@@ -28,7 +27,7 @@ func loadAuthFile(authFile string) (a auth.SimpleUserAuthenticator, err error) {
 	return a, nil
 }
 
-func loadproviderFile(providerFile string) (p challenge.Provider, err error) {
+func loadproviderFile(providerFile string) (p providers.ProviderSolved, err error) {
 	data, err := os.ReadFile(providerFile)
 	if err != nil {
 		return
@@ -48,7 +47,7 @@ type Server struct {
 	CertFile     string
 	KeyFile      string
 	Auth         auth.SimpleUserAuthenticator
-	Provider     challenge.Provider
+	Provider     providers.ProviderSolved
 }
 
 func (s *Server) Serve() {

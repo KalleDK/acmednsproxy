@@ -3,6 +3,7 @@ module github.com/KalleDK/acmednsproxy
 go 1.17
 
 require (
+	github.com/cloudflare/cloudflare-go v0.20.0
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-acme/lego/v4 v4.6.0
 	github.com/sethvargo/go-password v0.2.0
@@ -15,7 +16,6 @@ require (
 
 require (
 	github.com/cenkalti/backoff/v4 v4.1.1 // indirect
-	github.com/cloudflare/cloudflare-go v0.20.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect

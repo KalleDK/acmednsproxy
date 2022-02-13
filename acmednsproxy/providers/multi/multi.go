@@ -5,14 +5,14 @@ import (
 	"strings"
 
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
-	"github.com/go-acme/lego/v4/challenge"
+	"github.com/go-acme/lego/v4/challenge/dns01"
 )
 
 type MultiProvider struct {
-	providers map[string]challenge.Provider
+	providers map[string]providers.ProviderSolved
 }
 
-func (mp *MultiProvider) getProvider(domain string) (p challenge.Provider, err error) {
+func (mp *MultiProvider) getProvider(domain string) (p providers.ProviderSolved, err error) {
 	domain_parts := strings.Split(domain, ".")
 	for len(domain_parts) > 0 {
 		domain_stub := strings.Join(domain_parts, ".")
@@ -51,7 +51,35 @@ func (mp *MultiProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func Load(d providers.ConfigDecoder) (challenge.Provider, error) {
+func (mp *MultiProvider) RemoveRecord(fqdn, value string) error {
+	domain := dns01.UnFqdn(fqdn)
+	p, err := mp.getProvider(domain)
+	if err != nil {
+		return err
+	}
+
+	if err = p.RemoveRecord(fqdn, value); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (mp *MultiProvider) CreateRecord(fqdn, value string) error {
+	domain := dns01.UnFqdn(fqdn)
+	p, err := mp.getProvider(domain)
+	if err != nil {
+		return err
+	}
+
+	if err = p.CreateRecord(fqdn, value); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func Load(d providers.ConfigDecoder) (providers.ProviderSolved, error) {
 	mp := &MultiProvider{}
 	if err := d.Decode(&mp.providers); err != nil {
 		return nil, err
