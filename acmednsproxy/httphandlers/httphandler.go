@@ -26,6 +26,14 @@ type messageDefault struct {
 	Value string `json:"value"`
 }
 
+type combinedMessage struct {
+	Domain  string `json:"domain"`
+	Token   string `json:"token"`
+	KeyAuth string `json:"keyAuth"`
+	FQDN    string `json:"fqdn"`
+	Value   string `json:"value"`
+}
+
 type ProviderBackend interface {
 	Get(domain string) (challenge.Provider, error)
 }
@@ -54,8 +62,18 @@ func verifyPermission(a auth.UserAuthenticator) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		user, pass, _ := getBasicAuth(c)
 
-		var json messageRaw
-		if err := c.ShouldBindJSON(&json); err == nil {
+		var json combinedMessage
+		if err := c.ShouldBindJSON(&json); err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if json.Domain == "" && json.FQDN == "" {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "no domain"})
+			return
+		}
+
+		if json.Domain != "" {
 			if err := a.VerifyPermissions(user, pass, json.Domain); err != nil {
 				log.Println(user)
 				log.Println(pass)
@@ -64,25 +82,26 @@ func verifyPermission(a auth.UserAuthenticator) func(c *gin.Context) {
 				return
 			}
 
-			c.Set("message", json)
+			c.Set("message", messageRaw{
+				Domain:  json.Domain,
+				Token:   json.Token,
+				KeyAuth: json.KeyAuth,
+			})
 			return
 		}
 
-		var jsondef messageDefault
-		if err := c.ShouldBindJSON(&jsondef); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		if err := a.VerifyPermissions(user, pass, dns01.UnFqdn(jsondef.FQDN)); err != nil {
+		if err := a.VerifyPermissions(user, pass, dns01.UnFqdn(json.FQDN)); err != nil {
 			log.Println(user)
 			log.Println(pass)
-			log.Println(dns01.UnFqdn(jsondef.FQDN))
+			log.Println(dns01.UnFqdn(json.FQDN))
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.Set("message", jsondef)
+		c.Set("message", messageDefault{
+			FQDN:  json.FQDN,
+			Value: json.Value,
+		})
 	}
 }
 
