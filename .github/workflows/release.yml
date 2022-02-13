@@ -27,4 +27,5 @@ jobs:
       with:
         files: |
           ${{ github.workspace }}/packages/workspace/x86_64/*.apk
+          ${{ github.workspace }}/packages/workspace/x86_64/APKINDEX.tar.gz
           
