@@ -9,8 +9,8 @@ arch="all"
 license="MIT"
 #source="${pkgname}-${pkgver}.tar.gz::https://github.com/KalleDK/${pkgname}/archive/refs/heads/main.tar.gz
 source="${pkgname}-${pkgver}.tar.gz::https://github.com/KalleDK/${pkgname}/archive/v${pkgver}.tar.gz
-        auth.json
-        providers.json
+        auth.yaml
+        providers.yaml
         ${pkgname}.initd
         ${pkgname}.confd
         "
