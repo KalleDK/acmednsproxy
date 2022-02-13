@@ -37,8 +37,8 @@ package() {
     install -Dm755 "${builddir}/htcrypt"      "${pkgdir}/usr/bin/htcrypt"
 
     # Default configs
-    install -Dm640 "${srcdir}/auth.json"      "${pkgdir}/etc/${pkgname}/auth.json"
-    install -Dm640 "${srcdir}/providers.json" "${pkgdir}/etc/${pkgname}/providers.json"
+    install -Dm640 "${srcdir}/auth.yaml"      "${pkgdir}/etc/${pkgname}/auth.yaml"
+    install -Dm640 "${srcdir}/providers.yaml" "${pkgdir}/etc/${pkgname}/providers.yaml"
 
     # Openrc
     install -Dm755 "${srcdir}/${pkgname}.initd" "${pkgdir}/etc/init.d/${pkgname}"
