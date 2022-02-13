@@ -134,14 +134,14 @@ func cleanuptHandler(provider providers.ProviderSolved) func(c *gin.Context) {
 				return
 			}
 
-			c.JSON(http.StatusOK, gin.H{"status": "ok"})
+			c.JSON(http.StatusOK, gin.H{"status": "ok", "value": json.Token})
 		case messageDefault:
 			if err := provider.RemoveRecord(json.FQDN, json.Value); err != nil {
 				c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{"error": err.Error()})
 				return
 			}
 
-			c.JSON(http.StatusOK, gin.H{"status": "ok"})
+			c.JSON(http.StatusOK, gin.H{"status": "ok", "value": json.Value})
 
 		}
 	}
