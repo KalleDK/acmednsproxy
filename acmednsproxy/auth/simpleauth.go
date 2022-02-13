@@ -1,13 +1,13 @@
 package auth
 
 import (
-	"encoding/json"
 	"io"
 
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/yaml.v3"
 )
 
-type UserTable map[string][]byte
+type UserTable map[string]string
 
 type PermissionTable map[string]UserTable
 
@@ -16,7 +16,7 @@ type SimpleUserAuthenticator struct {
 }
 
 func (a *SimpleUserAuthenticator) Load(f io.Reader) (err error) {
-	dec := json.NewDecoder(f)
+	dec := yaml.NewDecoder(f)
 	if err := dec.Decode(&a.Permissions); err != nil {
 		return err
 	}
@@ -24,8 +24,8 @@ func (a *SimpleUserAuthenticator) Load(f io.Reader) (err error) {
 }
 
 func (a *SimpleUserAuthenticator) Save(w io.Writer) (err error) {
-	enc := json.NewEncoder(w)
-	enc.SetIndent("", "  ")
+	enc := yaml.NewEncoder(w)
+	enc.SetIndent(2)
 	if err := enc.Encode(a.Permissions); err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func (a *SimpleUserAuthenticator) AddPermission(user string, password string, do
 		a.Permissions[domain] = users
 	}
 
-	users[user] = encodedPassword
+	users[user] = string(encodedPassword)
 	return nil
 }
 
@@ -82,7 +82,7 @@ func (a *SimpleUserAuthenticator) VerifyPermissions(user string, password string
 		return ErrUnauthorized
 	}
 
-	if err := bcrypt.CompareHashAndPassword(encodedPassword, []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(encodedPassword), []byte(password)); err != nil {
 		return ErrUnauthorized
 	}
 

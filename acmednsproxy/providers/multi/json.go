@@ -14,7 +14,7 @@ type JsonConfigDecoder struct {
 	Reader io.Reader
 }
 
-type entry struct {
+type jsonentry struct {
 	Name   string
 	Config json.RawMessage
 }
@@ -26,7 +26,7 @@ func (j JsonConfigDecoder) Decode(v interface{}) (err error) {
 		return errors.New("invalid type")
 	}
 
-	var entries map[string]entry
+	var entries map[string]jsonentry
 
 	if err = json.NewDecoder(j.Reader).Decode(&entries); err != nil {
 		return

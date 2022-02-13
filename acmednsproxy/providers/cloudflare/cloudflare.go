@@ -9,9 +9,9 @@ import (
 )
 
 type CFConfig struct {
-	ZONE_API_TOKEN      string
-	DNS_API_TOKEN       string
-	POLLING_INTERVAL    *int
+	Zone_Api_Token      string
+	DNS_Api_Token       string
+	Polling_Interval    *int
 	PROPAGATION_TIMEOUT *int
 	TTL                 *int
 	HTTP_TIMEOUT        *int
@@ -24,14 +24,14 @@ func Load(dec providers.ConfigDecoder) (challenge.Provider, error) {
 	}
 
 	conf := cloudflare.NewDefaultConfig()
-	conf.AuthToken = config.DNS_API_TOKEN
-	conf.ZoneToken = config.ZONE_API_TOKEN
+	conf.AuthToken = config.DNS_Api_Token
+	conf.ZoneToken = config.Zone_Api_Token
 	if config.TTL != nil {
 		conf.TTL = *config.TTL
 	}
 
-	if config.POLLING_INTERVAL != nil {
-		conf.PollingInterval = time.Second * time.Duration(*config.POLLING_INTERVAL)
+	if config.Polling_Interval != nil {
+		conf.PollingInterval = time.Second * time.Duration(*config.Polling_Interval)
 	}
 
 	if config.PROPAGATION_TIMEOUT != nil {

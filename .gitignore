@@ -15,5 +15,6 @@
 # vendor/
 /bin
 /auth.json
+/auth.yaml
 /providers.json
-/providers_client.json
+/providers.yaml

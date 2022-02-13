@@ -34,7 +34,7 @@ func loadproviderFile(providerFile string) (p challenge.Provider, err error) {
 		return
 	}
 
-	p, err = providers.Load("multi", multi.JsonConfigDecoder{Reader: bytes.NewReader(data)})
+	p, err = providers.Load("multi", multi.YamlConfigDecoder{Reader: bytes.NewReader(data)})
 	if err != nil {
 		return
 	}

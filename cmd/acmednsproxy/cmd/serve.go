@@ -19,8 +19,8 @@ var providerFile string
 var certFile string
 var keyFile string
 
-var defaultAuthFile = "auth.json"
-var defaultProviderFile = "providers.json"
+var defaultAuthFile = "auth.yaml"
+var defaultProviderFile = "providers.yaml"
 
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
