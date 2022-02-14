@@ -1,0 +1,5 @@
+- domain: example.com
+  type: cloudflare
+  config:
+    zone_api_token: Zpe7L9jRCkag6PuNC6b5a17gMtf156Ozq7tsRfhk
+    dns_api_token: 7dZbonk5j5nDAq51Wd7nAuDF4rJl3FTQ_xYIrrKx

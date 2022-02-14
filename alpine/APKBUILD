@@ -7,10 +7,9 @@ pkgdesc="A small certmgr service"
 url="https://github.com/KalleDK/${pkgname}/"
 arch="all"
 license="MIT"
-#source="${pkgname}-${pkgver}.tar.gz::https://github.com/KalleDK/${pkgname}/archive/refs/heads/main.tar.gz
 source="${pkgname}-${pkgver}.tar.gz::https://github.com/KalleDK/${pkgname}/archive/v${pkgver}.tar.gz
-        auth.yaml
-        providers.yaml
+        auth.yaml.example
+        providers.yaml.example
         ${pkgname}.initd
         ${pkgname}.confd
         "
@@ -37,8 +36,8 @@ package() {
     install -Dm755 "${builddir}/htcrypt"      "${pkgdir}/usr/bin/htcrypt"
 
     # Default configs
-    install -Dm640 "${srcdir}/auth.yaml"      "${pkgdir}/etc/${pkgname}/auth.yaml"
-    install -Dm640 "${srcdir}/providers.yaml" "${pkgdir}/etc/${pkgname}/providers.yaml"
+    install -Dm640 "${srcdir}/auth.yaml.example"      "${pkgdir}/etc/${pkgname}/auth.yaml.example"
+    install -Dm640 "${srcdir}/providers.yaml.example" "${pkgdir}/etc/${pkgname}/providers.yaml.example"
 
     # Openrc
     install -Dm755 "${srcdir}/${pkgname}.initd" "${pkgdir}/etc/init.d/${pkgname}"
