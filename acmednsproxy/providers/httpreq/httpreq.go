@@ -169,56 +169,6 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	if d.config.Mode == "RAW" {
-		msg := &messageRaw{
-			Domain:  domain,
-			Token:   token,
-			KeyAuth: keyAuth,
-		}
-
-		err := d.doPost("/present", msg)
-		if err != nil {
-			return fmt.Errorf("httpreq: %w", err)
-		}
-		return nil
-	}
-
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
-
-	if err := d.CreateRecord(fqdn, value); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	if d.config.Mode == "RAW" {
-		msg := &messageRaw{
-			Domain:  domain,
-			Token:   token,
-			KeyAuth: keyAuth,
-		}
-
-		err := d.doPost("/cleanup", msg)
-		if err != nil {
-			return fmt.Errorf("httpreq: %w", err)
-		}
-		return nil
-	}
-
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
-
-	if err := d.RemoveRecord(fqdn, value); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (d *DNSProvider) RemoveRecord(fqdn, value string) error {
 	msg := &message{
 		FQDN:  fqdn,

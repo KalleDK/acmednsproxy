@@ -25,32 +25,6 @@ func (mp *MultiProvider) getProvider(domain string) (p providers.ProviderSolved,
 	return nil, errors.New("no matching provider")
 }
 
-func (mp *MultiProvider) Present(domain, token, keyAuth string) error {
-	p, err := mp.getProvider(domain)
-	if err != nil {
-		return err
-	}
-
-	if err = p.Present(domain, token, keyAuth); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (mp *MultiProvider) CleanUp(domain, token, keyAuth string) error {
-	p, err := mp.getProvider(domain)
-	if err != nil {
-		return err
-	}
-
-	if err = p.CleanUp(domain, token, keyAuth); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (mp *MultiProvider) RemoveRecord(fqdn, value string) error {
 	domain := dns01.UnFqdn(fqdn)
 	p, err := mp.getProvider(domain)

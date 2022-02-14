@@ -235,23 +235,3 @@ func (d *DNSProvider) RemoveRecord(fqdn, value string) error {
 
 	return nil
 }
-
-// Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	if err := d.CreateRecord(fqdn, value); err != nil {
-		return err
-	}
-	return nil
-}
-
-// CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
-
-	if err := d.RemoveRecord(fqdn, value); err != nil {
-		return err
-	}
-
-	return nil
-}

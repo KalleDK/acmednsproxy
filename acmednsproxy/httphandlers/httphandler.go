@@ -6,23 +6,23 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/auth"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
 	"github.com/gin-gonic/gin"
-	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 )
 
 type messageRaw struct {
-	Domain  string `json:"domain"`
-	Token   string `json:"token"`
-	KeyAuth string `json:"keyAuth"`
+	Domain  string
+	Token   string
+	KeyAuth string
 }
 
 type messageDefault struct {
-	FQDN  string `json:"fqdn"`
-	Value string `json:"value"`
+	FQDN  string
+	Value string
 }
 
 type combinedMessage struct {
@@ -31,10 +31,6 @@ type combinedMessage struct {
 	KeyAuth string `json:"keyAuth"`
 	FQDN    string `json:"fqdn"`
 	Value   string `json:"value"`
-}
-
-type ProviderBackend interface {
-	Get(domain string) (challenge.Provider, error)
 }
 
 func getBasicAuth(c *gin.Context) (user string, pass string, err error) {
@@ -104,7 +100,8 @@ func presentHandler(provider providers.ProviderSolved) func(c *gin.Context) {
 
 		switch json := jsonraw.(type) {
 		case messageRaw:
-			if err := provider.Present(json.Domain, json.Token, json.KeyAuth); err != nil {
+
+			if err := providers.Present(provider, json.Domain, json.Token, json.KeyAuth); err != nil {
 				c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{"error": err.Error()})
 				return
 			}
@@ -129,7 +126,7 @@ func cleanuptHandler(provider providers.ProviderSolved) func(c *gin.Context) {
 
 		switch json := jsonraw.(type) {
 		case messageRaw:
-			if err := provider.CleanUp(json.Domain, json.Token, json.KeyAuth); err != nil {
+			if err := providers.CleanUp(provider, json.Domain, json.Token, json.KeyAuth); err != nil {
 				c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{"error": err.Error()})
 				return
 			}
@@ -153,6 +150,11 @@ func NewHandler(a auth.UserAuthenticator, p providers.ProviderSolved) (handler h
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
+	router.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"pong": time.Now().String(),
+		})
+	})
 	router.POST("/present", verifyPermission(a), presentHandler(p))
 	router.POST("/cleanup", verifyPermission(a), cleanuptHandler(p))
 
