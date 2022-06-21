@@ -11,6 +11,8 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v3
+      with:
+        set-safe-directory: ${{ github.workspace }}
     - name: Alpine Build APK
       uses: KalleDK/actions-abuild@v0.0.2
       with:
