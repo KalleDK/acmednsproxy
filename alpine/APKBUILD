@@ -22,6 +22,7 @@ check() {
 }
 
 build() {
+    git config --global --add safe.directory /github/workspace
     cd ${srcdir}/${pkgname}-${pkgver}
     go build -v -ldflags=" \
         -X 'github.com/KalleDK/acmednsproxy/cmd/acmednsproxy/cmd.defaultAuthFile=/etc/acmednsproxy/auth.yaml' \
