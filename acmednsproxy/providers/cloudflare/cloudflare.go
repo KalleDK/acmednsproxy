@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/KalleDK/acmednsproxy/acmednsproxy/acmeserver"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
 	cloudflare "github.com/cloudflare/cloudflare-go"
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -24,7 +25,9 @@ type CFConfig struct {
 	HTTP_TIMEOUT        *int
 }
 
-func Load(dec providers.ConfigDecoder) (providers.ProviderSolved, error) {
+type loader struct{}
+
+func (l loader) Load(dec acmeserver.ConfigDecoder) (providers.DNSProvider, error) {
 	var config CFConfig
 	if err := dec.Decode(&config); err != nil {
 		return nil, err
@@ -57,8 +60,11 @@ func Load(dec providers.ConfigDecoder) (providers.ProviderSolved, error) {
 	return p, nil
 }
 
+var defaultLoader = loader{}
+var providerName = acmeserver.DNSProvider("cloudflare")
+
 func init() {
-	providers.AddLoader("cloudflare", providers.LoaderFunc(Load))
+	acmeserver.RegisterDNSProvider(providerName, defaultLoader)
 }
 
 const (

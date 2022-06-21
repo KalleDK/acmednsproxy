@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"os"
 
-	"github.com/KalleDK/acmednsproxy/acmednsproxy/auth"
+	"github.com/KalleDK/acmednsproxy/acmednsproxy/auth/simpleauth"
 )
 
-func loadAuthFile() (a auth.SimpleUserAuthenticator, err error) {
+func loadAuthFile() (a simpleauth.SimpleUserAuthenticator, err error) {
 	data, err := os.ReadFile(authFile)
 	if err != nil {
 		return
@@ -20,7 +20,7 @@ func loadAuthFile() (a auth.SimpleUserAuthenticator, err error) {
 	return a, nil
 }
 
-func saveAuthFile(a auth.SimpleUserAuthenticator) (err error) {
+func saveAuthFile(a simpleauth.SimpleUserAuthenticator) (err error) {
 	data := bytes.Buffer{}
 
 	if err = a.Save(&data); err != nil {

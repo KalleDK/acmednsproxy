@@ -11,32 +11,45 @@ import (
 	"syscall"
 
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/acmeserver"
+
+	_ "github.com/KalleDK/acmednsproxy/acmednsproxy/providers/all"
+
 	"github.com/spf13/cobra"
 )
 
-var authFile string
-var providerFile string
-var certFile string
-var keyFile string
+var (
+	authFile     string
+	providerFile string
+	certFile     string
+	keyFile      string
+	listenAddr   string
+)
 
-var defaultAuthFile = "auth.yaml"
-var defaultProviderFile = "providers.yaml"
+const (
+	defaultAddr         = ":8080"
+	defaultTLSAddr      = ":9090"
+	defaultAuthFile     = "auth.yaml"
+	defaultProviderFile = "providers.yaml"
+)
 
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		c := make(chan os.Signal, 1)
 		signal.Reset(syscall.SIGHUP)
 		signal.Notify(c, syscall.SIGHUP)
-		s := acmeserver.New(authFile, providerFile, certFile, keyFile)
+
+		config := acmeserver.ConfigFiles{
+			DNSType:  acmeserver.DNSProvider("cloudflare"),
+			DNSPath:  providerFile,
+			AuthType: acmeserver.Authenticator("simpleauth"),
+			AuthPath: authFile,
+		}
+
+		s := acmeserver.New(config)
 
 		go func() {
 			for range c {
@@ -44,8 +57,28 @@ to quickly create a Cobra application.`,
 				s.ReloadConfig()
 			}
 		}()
-		log.Print("Starting server")
-		s.Serve()
+		log.Print("Starting server...")
+
+		if len(certFile) > 0 {
+			if len(listenAddr) == 0 {
+				listenAddr = defaultTLSAddr
+			}
+			log.Printf("TLS at %s\n", listenAddr)
+			s.ServeTLS(acmeserver.TLSSettings{
+				Addr:     listenAddr,
+				CertFile: certFile,
+				KeyFile:  keyFile,
+			})
+		} else {
+			if len(listenAddr) == 0 {
+				listenAddr = defaultAddr
+			}
+			log.Printf("Non-TLS at %s\n", listenAddr)
+			s.Serve(acmeserver.Settings{
+				Addr: listenAddr,
+			})
+		}
+
 	},
 }
 
@@ -58,6 +91,7 @@ func init() {
 	// and all subcommands, e.g.:
 	serveCmd.PersistentFlags().StringVarP(&certFile, "cert", "c", "", "A help for foo")
 	serveCmd.PersistentFlags().StringVarP(&keyFile, "key", "k", "", "A help for foo")
+	serveCmd.PersistentFlags().StringVarP(&listenAddr, "addr", "i", "", "A help for foo")
 	serveCmd.PersistentFlags().StringVarP(&authFile, "auth", "a", defaultAuthFile, "A help for foo")
 	serveCmd.PersistentFlags().StringVarP(&providerFile, "providers", "p", defaultProviderFile, "A help for foo")
 

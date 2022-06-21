@@ -53,7 +53,7 @@ func getBasicAuth(c *gin.Context) (user string, pass string, err error) {
 	return string(parts[0]), string(parts[1]), nil
 }
 
-func verifyPermission(a auth.UserAuthenticator) func(c *gin.Context) {
+func verifyPermission(a auth.Authenticator) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		user, pass, _ := getBasicAuth(c)
 
@@ -94,7 +94,7 @@ func verifyPermission(a auth.UserAuthenticator) func(c *gin.Context) {
 	}
 }
 
-func presentHandler(provider providers.ProviderSolved) func(c *gin.Context) {
+func presentHandler(provider providers.DNSProvider) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		jsonraw := c.MustGet("message")
 
@@ -120,7 +120,7 @@ func presentHandler(provider providers.ProviderSolved) func(c *gin.Context) {
 	}
 }
 
-func cleanuptHandler(provider providers.ProviderSolved) func(c *gin.Context) {
+func cleanuptHandler(provider providers.DNSProvider) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		jsonraw := c.MustGet("message")
 
@@ -144,7 +144,7 @@ func cleanuptHandler(provider providers.ProviderSolved) func(c *gin.Context) {
 	}
 }
 
-func NewHandler(a auth.UserAuthenticator, p providers.ProviderSolved) (handler http.Handler, err error) {
+func NewHandler(a auth.Authenticator, p providers.DNSProvider) (handler http.Handler, err error) {
 	// Creates a gin router with default middleware:
 	// logger and recovery (crash-free) middleware
 	gin.SetMode(gin.ReleaseMode)

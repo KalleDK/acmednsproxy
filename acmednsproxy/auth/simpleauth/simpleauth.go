@@ -1,8 +1,11 @@
-package auth
+package simpleauth
 
 import (
+	"bytes"
 	"io"
+	"os"
 
+	"github.com/KalleDK/acmednsproxy/acmednsproxy/auth"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/yaml.v3"
 )
@@ -54,17 +57,17 @@ func (a *SimpleUserAuthenticator) AddPermission(user string, password string, do
 
 func (a *SimpleUserAuthenticator) RemovePermission(user string, domain string) (err error) {
 	if a.Permissions == nil {
-		return ErrUnknownDomain
+		return auth.ErrUnknownDomain
 	}
 
 	users, ok := a.Permissions[domain]
 	if !ok {
-		return ErrUnknownDomain
+		return auth.ErrUnknownDomain
 	}
 
 	_, ok = users[user]
 	if !ok {
-		return ErrUnknownUser
+		return auth.ErrUnknownUser
 	}
 
 	delete(users, user)
@@ -74,17 +77,36 @@ func (a *SimpleUserAuthenticator) RemovePermission(user string, domain string) (
 func (a *SimpleUserAuthenticator) VerifyPermissions(user string, password string, domain string) (err error) {
 	users, ok := a.Permissions[domain]
 	if !ok {
-		return ErrUnauthorized
+		return auth.ErrUnauthorized
 	}
 
 	encodedPassword, ok := users[user]
 	if !ok {
-		return ErrUnauthorized
+		return auth.ErrUnauthorized
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(encodedPassword), []byte(password)); err != nil {
-		return ErrUnauthorized
+		return auth.ErrUnauthorized
 	}
 
 	return nil
+}
+
+type SimpleUserAuthenticatorLoader struct {
+	Path string
+}
+
+func (a SimpleUserAuthenticatorLoader) Load() (uauth auth.Authenticator, err error) {
+	data, err := os.ReadFile(a.Path)
+	if err != nil {
+		return
+	}
+
+	u := SimpleUserAuthenticator{}
+
+	if err = u.Load(bytes.NewReader(data)); err != nil {
+		return
+	}
+
+	return &u, nil
 }

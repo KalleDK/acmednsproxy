@@ -10,6 +10,6 @@ var (
 	ErrUnknownUser   = errors.New("unknown user")
 )
 
-type UserAuthenticator interface {
+type Authenticator interface {
 	VerifyPermissions(user string, password string, domain string) (err error)
 }
