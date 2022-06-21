@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -12,20 +13,38 @@ import (
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
 	cloudflare "github.com/cloudflare/cloudflare-go"
 	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
-	"github.com/go-acme/lego/v4/platform/config/env"
+)
+
+const (
+	minTTL                    = 120
+	defaultTTL                = minTTL
+	defaultPropagationTimeout = 2 * time.Minute
+	defaultPollingInterval    = 2 * time.Second
+	defaultHTTPTimeout        = 30 * time.Second
 )
 
 type CFConfig struct {
-	Zone_Api_Token      string
-	DNS_Api_Token       string
-	Polling_Interval    *int
+	ZONE_ID             string
+	DNS_API_TOKEN       string
+	POLLING_INTERVAL    *int
 	PROPAGATION_TIMEOUT *int
 	TTL                 *int
 	HTTP_TIMEOUT        *int
 }
 
 type loader struct{}
+
+func updateIntIfExists(o *int, s *int) {
+	if s != nil {
+		*o = *s
+	}
+}
+
+func updateSecondIfExists(d *time.Duration, s *int) {
+	if s != nil {
+		*d = time.Second * time.Duration(*s)
+	}
+}
 
 func (l loader) Load(dec acmeserver.ConfigDecoder) (providers.DNSProvider, error) {
 	var config CFConfig
@@ -34,23 +53,13 @@ func (l loader) Load(dec acmeserver.ConfigDecoder) (providers.DNSProvider, error
 	}
 
 	conf := NewDefaultConfig()
-	conf.AuthToken = config.DNS_Api_Token
-	conf.ZoneToken = config.Zone_Api_Token
-	if config.TTL != nil {
-		conf.TTL = *config.TTL
-	}
+	conf.API.AuthToken = config.DNS_API_TOKEN
+	conf.API.ZoneID = config.ZONE_ID
 
-	if config.Polling_Interval != nil {
-		conf.PollingInterval = time.Second * time.Duration(*config.Polling_Interval)
-	}
-
-	if config.PROPAGATION_TIMEOUT != nil {
-		conf.PropagationTimeout = time.Second * time.Duration(*config.PROPAGATION_TIMEOUT)
-	}
-
-	if config.HTTP_TIMEOUT != nil {
-		conf.HTTPClient.Timeout = time.Second * time.Duration(*config.HTTP_TIMEOUT)
-	}
+	updateIntIfExists(&conf.Provider.TTL, config.TTL)
+	updateSecondIfExists(&conf.Provider.PollingInterval, config.POLLING_INTERVAL)
+	updateSecondIfExists(&conf.Provider.PropagationTimeout, config.PROPAGATION_TIMEOUT)
+	updateSecondIfExists(&conf.API.HTTPClient.Timeout, config.HTTP_TIMEOUT)
 
 	p, err := NewDNSProviderConfig(conf)
 	if err != nil {
@@ -67,81 +76,40 @@ func init() {
 	acmeserver.RegisterDNSProvider(providerName, defaultLoader)
 }
 
-const (
-	minTTL = 120
-)
-
-// Config is used to configure the creation of the DNSProvider.
-type Config struct {
-	AuthEmail string
-	AuthKey   string
-
-	AuthToken string
-	ZoneToken string
-
+type ProviderConfig struct {
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
-	HTTPClient         *http.Client
+}
+
+// Config is used to configure the creation of the DNSProvider.
+type Config struct {
+	API      APIConfig
+	Provider ProviderConfig
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("CLOUDFLARE_TTL", minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("CLOUDFLARE_PROPAGATION_TIMEOUT", 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("CLOUDFLARE_POLLING_INTERVAL", 2*time.Second),
-		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("CLOUDFLARE_HTTP_TIMEOUT", 30*time.Second),
+		Provider: ProviderConfig{
+			TTL:                defaultTTL,
+			PropagationTimeout: defaultPropagationTimeout,
+			PollingInterval:    defaultPollingInterval,
+		},
+		API: APIConfig{
+			HTTPClient: &http.Client{
+				Timeout: defaultHTTPTimeout,
+			},
 		},
 	}
 }
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	client *metaClient
-	config *Config
+	api    *apiClient
+	config ProviderConfig
 
-	recordIDs   map[string]string
-	recordIDsMu sync.Mutex
-}
-
-// NewDNSProvider returns a DNSProvider instance configured for Cloudflare.
-// Credentials must be passed in as environment variables:
-//
-// Either provide CLOUDFLARE_EMAIL and CLOUDFLARE_API_KEY,
-// or a CLOUDFLARE_DNS_API_TOKEN.
-//
-// For a more paranoid setup, provide CLOUDFLARE_DNS_API_TOKEN and CLOUDFLARE_ZONE_API_TOKEN.
-//
-// The email and API key should be avoided, if possible.
-// Instead setup a API token with both Zone:Read and DNS:Edit permission, and pass the CLOUDFLARE_DNS_API_TOKEN environment variable.
-// You can split the Zone:Read and DNS:Edit permissions across multiple API tokens:
-// in this case pass both CLOUDFLARE_ZONE_API_TOKEN and CLOUDFLARE_DNS_API_TOKEN accordingly.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.GetWithFallback(
-		[]string{"CLOUDFLARE_EMAIL", "CF_API_EMAIL"},
-		[]string{"CLOUDFLARE_API_KEY", "CF_API_KEY"},
-	)
-	if err != nil {
-		var errT error
-		values, errT = env.GetWithFallback(
-			[]string{"CLOUDFLARE_DNS_API_TOKEN", "CF_DNS_API_TOKEN"},
-			[]string{"CLOUDFLARE_ZONE_API_TOKEN", "CF_ZONE_API_TOKEN", "CLOUDFLARE_DNS_API_TOKEN", "CF_DNS_API_TOKEN"},
-		)
-		if errT != nil {
-			// nolint:errorlint
-			return nil, fmt.Errorf("cloudflare: %v or %v", err, errT)
-		}
-	}
-
-	config := NewDefaultConfig()
-	config.AuthEmail = values["CLOUDFLARE_EMAIL"]
-	config.AuthKey = values["CLOUDFLARE_API_KEY"]
-	config.AuthToken = values["CLOUDFLARE_DNS_API_TOKEN"]
-	config.ZoneToken = values["CLOUDFLARE_ZONE_API_TOKEN"]
-
-	return NewDNSProviderConfig(config)
+	records recordDB
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for Cloudflare.
@@ -150,19 +118,21 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("cloudflare: the configuration of the DNS provider is nil")
 	}
 
-	if config.TTL < minTTL {
-		return nil, fmt.Errorf("cloudflare: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
+	if config.Provider.TTL < minTTL {
+		return nil, fmt.Errorf("cloudflare: invalid TTL, TTL (%d) must be greater than %d", config.Provider.TTL, minTTL)
 	}
 
-	client, err := newClient(config)
+	client, err := newAPIClient(&config.API)
 	if err != nil {
 		return nil, fmt.Errorf("cloudflare: %w", err)
 	}
 
 	return &DNSProvider{
-		client:    client,
-		config:    config,
-		recordIDs: make(map[string]string),
+		api:    client,
+		config: config.Provider,
+		records: recordDB{
+			values: map[string]string{},
+		},
 	}, nil
 }
 
@@ -174,15 +144,6 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 func (d *DNSProvider) CreateRecord(fqdn, value string) error {
 	token := fqdn + value
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return fmt.Errorf("cloudflare: %w", err)
-	}
-
-	zoneID, err := d.client.ZoneIDByName(authZone)
-	if err != nil {
-		return fmt.Errorf("cloudflare: failed to find zone %s: %w", authZone, err)
-	}
 
 	dnsRecord := cloudflare.DNSRecord{
 		Type:    "TXT",
@@ -191,7 +152,7 @@ func (d *DNSProvider) CreateRecord(fqdn, value string) error {
 		TTL:     d.config.TTL,
 	}
 
-	response, err := d.client.CreateDNSRecord(context.Background(), zoneID, dnsRecord)
+	response, err := d.api.CreateDNSRecord(context.Background(), dnsRecord)
 	if err != nil {
 		return fmt.Errorf("cloudflare: failed to create TXT record: %w", err)
 	}
@@ -200,44 +161,57 @@ func (d *DNSProvider) CreateRecord(fqdn, value string) error {
 		return fmt.Errorf("cloudflare: failed to create TXT record: %+v %+v", response.Errors, response.Messages)
 	}
 
-	d.recordIDsMu.Lock()
-	d.recordIDs[token] = response.Result.ID
-	d.recordIDsMu.Unlock()
+	d.records.Add(token, response.Result.ID)
 
-	log.Infof("cloudflare: new record for %s, ID %s", fqdn, response.Result.ID)
+	log.Printf("cloudflare: new record for %s, ID %s", fqdn, response.Result.ID)
 
 	return nil
 }
 
 func (d *DNSProvider) RemoveRecord(fqdn, value string) error {
 	token := fqdn + value
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return fmt.Errorf("cloudflare: %w", err)
-	}
 
-	zoneID, err := d.client.ZoneIDByName(authZone)
+	recordID, err := d.records.Get(token)
 	if err != nil {
-		return fmt.Errorf("cloudflare: failed to find zone %s: %w", authZone, err)
-	}
-
-	// get the record's unique ID from when we created it
-	d.recordIDsMu.Lock()
-	recordID, ok := d.recordIDs[token]
-	d.recordIDsMu.Unlock()
-	if !ok {
 		return fmt.Errorf("cloudflare: unknown record ID for '%s'", fqdn)
 	}
 
-	err = d.client.DeleteDNSRecord(context.Background(), zoneID, recordID)
-	if err != nil {
-		log.Printf("cloudflare: failed to delete TXT record: %w", err)
+	if err := d.api.DeleteDNSRecord(context.Background(), recordID); err != nil {
+		log.Printf("cloudflare: failed to delete TXT record: %s", err)
 	}
 
-	// Delete record ID from map
-	d.recordIDsMu.Lock()
-	delete(d.recordIDs, token)
-	d.recordIDsMu.Unlock()
+	d.records.Delete(token)
 
 	return nil
+}
+
+type recordDB struct {
+	values map[string]string
+	mutex  sync.Mutex
+}
+
+func (r *recordDB) Get(name string) (string, error) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	v, ok := r.values[name]
+	if !ok {
+		return "", errors.New("missing token")
+	}
+
+	return v, nil
+}
+
+func (r *recordDB) Add(name, value string) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	r.values[name] = value
+}
+
+func (r *recordDB) Delete(name string) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	delete(r.values, name)
 }
