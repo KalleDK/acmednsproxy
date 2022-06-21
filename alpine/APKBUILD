@@ -23,11 +23,11 @@ check() {
 
 build() {
     cd ${srcdir}/${pkgname}-${pkgver}
-    go build -ldflags=" \
+    go build -v -ldflags=" \
         -X 'github.com/KalleDK/acmednsproxy/cmd/acmednsproxy/cmd.defaultAuthFile=/etc/acmednsproxy/auth.yaml' \
         -X 'github.com/KalleDK/acmednsproxy/cmd/acmednsproxy/cmd.defaultProviderFile=/etc/acmednsproxy/providers.yaml' \
     " -o ${builddir}/${pkgname} ./cmd/${pkgname}
-    go build -o ${builddir}/htcrypt ./cmd/htcrypt
+    go build -v -o ${builddir}/htcrypt ./cmd/htcrypt
 }
 
 package() {
