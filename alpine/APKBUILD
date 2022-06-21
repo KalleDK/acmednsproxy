@@ -14,7 +14,7 @@ source="${pkgname}-${pkgver}.tar.gz::https://github.com/KalleDK/${pkgname}/archi
         ${pkgname}.confd
         "
 builddir="${srcdir}/${pkgname}-${pkgver}/bin"
-makedepends="go"
+makedepends="git go"
 subpackages="$pkgname-tools $pkgname-openrc"
 
 check() {
