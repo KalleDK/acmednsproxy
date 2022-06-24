@@ -1,0 +1,17 @@
+on:
+  push:
+    branches:
+    - main
+
+name: Make Relase
+jobs:
+  alpine:
+    name: Build Binary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+           go-version-file: 'go.mod'
+      - run: go version
+      - run: go build ./cmd/htcrypt
