@@ -8,6 +8,10 @@ jobs:
   alpine:
     name: Build Binary
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, windows]
+        goarch: [amd64]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
@@ -18,7 +22,7 @@ jobs:
       - run: go build -o ./build/acmednsproxy ./cmd/acmednsproxy 
       - uses: actions/upload-artifact@v3
         with:
-          name: acmednsproxy-linux-amd64
+          name: acmednsproxy-${{ matrix.goos }}-${{ matrix.goarch }}
           path: ./build/*
           if-no-files-found: error
   flaf:
@@ -27,11 +31,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
       - uses: actions/download-artifact@v3
         with:
           name: acmednsproxy-linux-amd64
-          path: artifact
-          
+          path: artifact/linux-amd64
       - name: Display structure of downloaded files
         run: ls -R
