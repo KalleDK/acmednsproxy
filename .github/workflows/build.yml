@@ -12,14 +12,23 @@ jobs:
       matrix:
         goos: [linux, windows]
         goarch: [amd64]
+    
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
            go-version-file: 'go.mod'
       - run: go version
-      - run: go build -o ./build/htcrypt ./cmd/htcrypt
-      - run: go build -o ./build/acmednsproxy ./cmd/acmednsproxy 
+      - name: Build htcrypt
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: go build -o ./build/ ./cmd/htcrypt
+      - name: Build acmednsproxy
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: go build -o ./build/ ./cmd/acmednsproxy
       - uses: actions/upload-artifact@v3
         with:
           name: acmednsproxy-${{ matrix.goos }}-${{ matrix.goarch }}
