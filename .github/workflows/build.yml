@@ -14,9 +14,8 @@ jobs:
         with:
            go-version-file: 'go.mod'
       - run: go version
-      - run: mkdir ./build
-      - run: go build ./cmd/htcrypt -o ./build/htcrypt
-      - run: go build ./cmd/acmednsproxy -o ./build/acmednsproxy
+      - run: go build -o ./build/htcrypt ./cmd/htcrypt
+      - run: go build -o ./build/acmednsproxy ./cmd/acmednsproxy 
       - uses: actions/upload-artifact@v3
         with:
           name: acmednsproxy-linux-amd64
