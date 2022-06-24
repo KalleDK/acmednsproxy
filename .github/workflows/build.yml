@@ -5,7 +5,7 @@ on:
 
 name: Make Relase
 jobs:
-  alpine:
+  glibc:
     name: Build Binary
     runs-on: ubuntu-latest
     strategy:
@@ -31,11 +31,38 @@ jobs:
         run: go build -o ./build/ ./cmd/acmednsproxy
       - uses: actions/upload-artifact@v3
         with:
-          name: acmednsproxy-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: acmednsproxy-${{ matrix.goos }}-${{ matrix.goarch }}-libc
+          path: ./build/*
+          if-no-files-found: error
+  musl:
+    name: Build Binary
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux]
+        goarch: [amd64]
+    
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker://golang:alpine
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        with:
+          args: go build -o ./build/ ./cmd/htcrypt
+      - uses: docker://golang:alpine
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        with:
+          args: go build -o ./build/ ./cmd/acmednsproxy
+      - uses: actions/upload-artifact@v3
+        with:
+          name: acmednsproxy-${{ matrix.goos }}-${{ matrix.goarch }}-musl
           path: ./build/*
           if-no-files-found: error
   flaf:
-    needs: alpine
+    needs: [glibc, musl]
     name: Flaf
     runs-on: ubuntu-latest
     steps:
