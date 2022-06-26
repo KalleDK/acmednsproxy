@@ -5,7 +5,7 @@ on:
 
 name: Make Relase
 jobs:
-  glibc:
+  archive:
     name: Build Binary
     runs-on: ubuntu-latest
     steps:
@@ -26,6 +26,50 @@ jobs:
           path: |
             ./dist/acmednsproxy-archive/*.zip
             ./dist/acmednsproxy-archive/*.tar.gz
+          if-no-files-found: error
+  server:
+    name: Build Binary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+           go-version-file: 'go.mod'
+      - name: Build packages
+        uses: goreleaser/goreleaser-action@v3
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --config .goreleaser_server.yaml --rm-dist --snapshot
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: acmednsproxy-server
+          path: |
+            ./dist/acmednsproxy-server/*.deb
+            ./dist/acmednsproxy-server/*.apk
+          if-no-files-found: error
+  tools:
+    name: Build Binary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+           go-version-file: 'go.mod'
+      - name: Build packages
+        uses: goreleaser/goreleaser-action@v3
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --config .goreleaser_tools.yaml --rm-dist --snapshot
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: acmednsproxy-tools
+          path: |
+            ./dist/acmednsproxy-tools/*.deb
+            ./dist/acmednsproxy-tools/*.apk
           if-no-files-found: error
   musl:
     name: Build Binary
@@ -58,14 +102,21 @@ jobs:
           if-no-files-found: error
   
   flaf:
-    needs: [glibc, musl]
+    needs: [archive, server, tools]
     name: Flaf
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v3
         with:
-          name: acmednsproxy-linux-amd64
-          path: artifact/linux-amd64
+          name: acmednsproxy-archive
+          path: artifact/archive
+      - uses: actions/download-artifact@v3
+        with:
+          name: acmednsproxy-server
+          path: artifact/server
+      - uses: actions/download-artifact@v3
+        with:
+          name: acmednsproxy-tools
+          path: artifact/tools
       - name: Display structure of downloaded files
         run: ls -R
