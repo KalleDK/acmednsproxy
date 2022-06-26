@@ -4,8 +4,9 @@ After=network.target
 
 [Service]
 User=acmednsproxy
-EnvirontmentFile=-/etc/default/acmednsproxy
+EnvironmentFile=-/etc/default/acmednsproxy
 ExecStart=/usr/bin/acmednsproxy serve $ACMEDNSPROXY_OPTS
+ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
 WantedBy=multi-user.target
