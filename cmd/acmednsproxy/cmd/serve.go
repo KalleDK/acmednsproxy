@@ -13,6 +13,7 @@ import (
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/acmeserver"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
 
+	_ "github.com/KalleDK/acmednsproxy/acmednsproxy/auth/all"
 	_ "github.com/KalleDK/acmednsproxy/acmednsproxy/providers/all"
 
 	"github.com/spf13/cobra"
