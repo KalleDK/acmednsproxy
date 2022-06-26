@@ -71,38 +71,33 @@ jobs:
             ./dist/acmednsproxy-tools/*.deb
             ./dist/acmednsproxy-tools/*.apk
           if-no-files-found: error
-  musl:
-    name: Build Binary
+  alpine:
+    name: Build APK
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        goos: [linux]
-        goarch: [amd64]
     steps:
-      - uses: actions/checkout@v3
-      - name: Build htcrypt
-        uses: docker://golang:alpine
-        env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
+      - name: Checkout source code
+        uses: actions/checkout@v3
+      - name: Alpine Build APK
+        uses: KalleDK/actions-abuild@v0.0.2
         with:
-          args: go build -o ./build/ ./cmd/adpcrypt
-      - name: Build acmednsproxy
-        uses: docker://golang:alpine
-        env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
-        with:
-          args: go build -o ./build/ ./cmd/acmednsproxy
+          abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
+          abuild_prefix: ./alpine
+          abuild_pkg_ver: ${{ github.ref_name }}
+          abuild_pkg_rel: 1
+          abuild_key_name:  ${{ secrets.ABUILD_KEY_NAME }}
+          abuild_key: ${{ secrets.ABUILD_KEY }}
+          abuild_key_pub: ${{ secrets.ABUILD_KEY_PUB }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: acmednsproxy-${{ matrix.goos }}-${{ matrix.goarch }}-musl
-          path: ./build/*
+          name: acmednsproxy-alpine
+          path: |
+            ./packages/*.apk
+            ./packages/*.tar.gz
           if-no-files-found: error
   
   flaf:
-    needs: [archive, server, tools]
+    needs: [archive, server, tools, alpine]
     name: Flaf
     runs-on: ubuntu-latest
     steps:
@@ -118,5 +113,9 @@ jobs:
         with:
           name: acmednsproxy-tools
           path: artifact/tools
+      - uses: actions/download-artifact@v3
+        with:
+          name: acmednsproxy-alpine
+          path: artifact/alpine
       - name: Display structure of downloaded files
         run: ls -R
