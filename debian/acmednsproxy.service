@@ -3,10 +3,9 @@ Description=ACME DNS proxy
 After=network.target
 
 [Service]
-Type=simple
-Restart=always
 User=acmednsproxy
-ExecStart=/usr/bin/acmednsproxy serve -a /etc/acmednsproxy/auth.yaml -p /etc/acmednsproxy/providers.yaml
+EnvirontmentFile=-/etc/default/acmednsproxy
+ExecStart=/usr/bin/acmednsproxy serve $ACMEDNSPROXY_OPTS
 
 [Install]
 WantedBy=multi-user.target
