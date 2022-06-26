@@ -50,7 +50,8 @@ nfpms:
       - src: ./alpine/providers.yaml.example
         dst: /etc/acmednsproxy/providers.yaml.example
         type: config
-
+    scripts:
+      preinstall: "scripts/preinstall.sh"
 changelog:
   sort: asc
   filters:
