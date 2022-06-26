@@ -1,0 +1,64 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - id: acmednsproxy
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+    goarch:
+      - amd64
+    ldflags:
+      - -s -w
+      - -X 'github.com/KalleDK/acmednsproxy/cmd/acmednsproxy/cmd.defaultAuthFile=/etc/acmednsproxy/auth.yaml'
+      - -X 'github.com/KalleDK/acmednsproxy/cmd/acmednsproxy/cmd.defaultProviderFile=/etc/acmednsproxy/providers.yaml'
+    main: ./cmd/acmednsproxy
+    binary: acmednsproxy
+archives:
+  - format: binary
+dist: dist/acmednsproxy
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+nfpms:
+  - package_name: acmednsproxy
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    formats:
+      - apk
+      - deb
+    contents:
+      - src: ./debian/acmednsproxy.service
+        dst: /lib/systemd/system/acmednsproxy.service
+        packager: deb
+      - src: ./debian/acmednsproxy.default
+        dst: /etc/default/acmednsproxy
+        packager: deb
+      - src: ./alpine/acmednsproxy.initd
+        dst: /etc/init.d/acmednsproxy
+        packager: apk
+      - src: ./alpine/acmednsproxy.confd
+        dst: /etc/conf.d/acmednsproxy
+        packager: apk
+      - src: ./config/auth.yaml
+        dst: /etc/acmednsproxy/auth.yaml
+        type: config
+      - src: ./config/providers.yaml
+        dst: /etc/acmednsproxy/providers.yaml
+        type: config
+      - src: ./config/auth.yaml.example
+        dst: /etc/acmednsproxy/auth.yaml.example
+      - src: ./config/providers.yaml.example
+        dst: /etc/acmednsproxy/providers.yaml.example
+    scripts:
+      preinstall: "scripts/preinstall.sh"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'

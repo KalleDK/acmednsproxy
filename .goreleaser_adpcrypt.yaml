@@ -1,0 +1,35 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - id: adpcrypt
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+    goarch:
+      - amd64
+    main: ./cmd/adpcrypt
+    binary: adpcrypt
+archives:
+  - format: binary
+dist: dist/acmednsproxy-tools
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+nfpms:
+  - package_name: acmednsproxy-tools
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    formats:
+      - apk
+      - deb
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
