@@ -8,8 +8,6 @@ before:
     - go generate ./...
 builds:
   - id: acmednsproxy
-    env:
-      - CGO_ENABLED=0
     goos:
       - linux
       - windows
