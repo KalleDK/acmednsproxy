@@ -18,12 +18,7 @@ builds:
     main: ./cmd/acmednsproxy
     binary: acmednsproxy
 archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
+  - format: binary
 checksum:
   name_template: 'checksums.txt'
 snapshot:
