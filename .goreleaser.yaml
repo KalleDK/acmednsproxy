@@ -30,6 +30,7 @@ snapshot:
   name_template: "{{ incpatch .Version }}-next"
 nfpms:
   - id: acme
+    package_name: acme1
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
     formats:
       - apk
@@ -57,6 +58,7 @@ nfpms:
     scripts:
       preinstall: "scripts/preinstall.sh"
   - id: acme2
+    package_name: acme2
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
     formats:
       - apk
