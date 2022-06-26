@@ -47,10 +47,10 @@ nfpms:
       - src: ./alpine/acmednsproxy.confd
         dst: /etc/conf.d/acmednsproxy
         packager: apk
-      - src: ./alpine/auth.yaml.example
+      - src: ./config/auth.yaml.example
         dst: /etc/acmednsproxy/auth.yaml.example
         type: config
-      - src: ./alpine/providers.yaml.example
+      - src: ./config/providers.yaml.example
         dst: /etc/acmednsproxy/providers.yaml.example
         type: config
     scripts:

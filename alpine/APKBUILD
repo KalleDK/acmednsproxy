@@ -8,8 +8,6 @@ url="https://github.com/KalleDK/${pkgname}/"
 arch="all"
 license="MIT"
 source="${pkgname}-${pkgver}.tar.gz::https://github.com/KalleDK/${pkgname}/archive/v${pkgver}.tar.gz
-        auth.yaml.example
-        providers.yaml.example
         ${pkgname}.initd
         ${pkgname}.confd
         "
@@ -38,8 +36,8 @@ package() {
     install -Dm755 "${builddir}/htcrypt"      "${pkgdir}/usr/bin/htcrypt"
 
     # Default configs
-    install -Dm640 "${srcdir}/auth.yaml.example"      "${pkgdir}/etc/${pkgname}/auth.yaml.example"
-    install -Dm640 "${srcdir}/providers.yaml.example" "${pkgdir}/etc/${pkgname}/providers.yaml.example"
+    install -Dm640 "${srcdir}/${pkgname}-${pkgver}/config/auth.yaml.example"      "${pkgdir}/etc/${pkgname}/auth.yaml.example"
+    install -Dm640 "${srcdir}/${pkgname}-${pkgver}/config/providers.yaml.example" "${pkgdir}/etc/${pkgname}/providers.yaml.example"
 
     # Openrc
     install -Dm755 "${srcdir}/${pkgname}.initd" "${pkgdir}/etc/init.d/${pkgname}"
