@@ -1,10 +1,9 @@
 package simpleauth
 
 import (
-	"bytes"
 	"io"
-	"os"
 
+	"github.com/KalleDK/acmednsproxy/acmednsproxy/acmeserver"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/auth"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/yaml.v3"
@@ -96,17 +95,16 @@ type SimpleUserAuthenticatorLoader struct {
 	Path string
 }
 
-func (a SimpleUserAuthenticatorLoader) Load() (uauth auth.Authenticator, err error) {
-	data, err := os.ReadFile(a.Path)
-	if err != nil {
-		return
-	}
+func (a SimpleUserAuthenticatorLoader) Load(d acmeserver.ConfigDecoder) (uauth auth.Authenticator, err error) {
 
 	u := SimpleUserAuthenticator{}
-
-	if err = u.Load(bytes.NewReader(data)); err != nil {
-		return
+	if err := d.Decode(&u.Permissions); err != nil {
+		return nil, err
 	}
 
 	return &u, nil
+}
+
+func init() {
+	acmeserver.RegisterAuthenticator(acmeserver.Authenticator("simpleauth"), SimpleUserAuthenticatorLoader{})
 }

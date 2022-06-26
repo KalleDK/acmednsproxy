@@ -7,7 +7,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=root
-ExecStart=/usr/bin/acmednsproxy -a /etc/acmednsproxy/auth.yaml -p /etc/acmednsproxy/providers.yaml
+ExecStart=/usr/bin/acmednsproxy serve -a /etc/acmednsproxy/auth.yaml -p /etc/acmednsproxy/providers.yaml
 
 [Install]
 WantedBy=multi-user.target
