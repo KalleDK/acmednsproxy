@@ -20,7 +20,7 @@ builds:
     binary: acmednsproxy
 archives:
   - format: binary
-dist: dist/acmednsproxy
+dist: dist/acmednsproxy-server
 checksum:
   name_template: 'checksums.txt'
 snapshot:
