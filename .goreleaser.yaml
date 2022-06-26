@@ -1,0 +1,59 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # you may remove this if you don't need go generate
+    - go generate ./...
+builds:
+  - id: acmednsproxy
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+    goarch:
+      - amd64
+    main: ./cmd/acmednsproxy
+    binary: acmednsproxy
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+nfpms:
+  - maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    formats:
+      - apk
+      - deb
+    contents:
+      # Basic file that applies to all packagers
+      - src: ./debian/acmednsproxy.service
+        dst: /etc/systemd/system/acmednsproxy.service
+        packager: deb
+      - src: ./alpine/acmednsproxy.initd
+        dst: /etc/init.d/acmednsproxy
+        packager: apk
+      - src: ./alpine/acmednsproxy.confd
+        dst: /etc/conf.d/acmednsproxy
+        packager: apk
+      - src: ./alpine/auth.yaml.example
+        dst: /etc/acmednsproxy/auth.yaml.example
+        type: config
+      - src: ./alpine/providers.yaml.example
+        dst: /etc/acmednsproxy/providers.yaml.example
+        type: config
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'

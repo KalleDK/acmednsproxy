@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/KalleDK/acmednsproxy/acmednsproxy/acmeserver"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
 	cloudflare "github.com/cloudflare/cloudflare-go"
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -46,16 +45,16 @@ func updateSecondIfExists(d *time.Duration, s *int) {
 	}
 }
 
-func (l loader) Load(dec acmeserver.ConfigDecoder) (providers.DNSProvider, error) {
+func (l loader) Load(dec providers.ConfigDecoder) (providers.DNSProvider, error) {
 	var config CFConfig
 	if err := dec.Decode(&config); err != nil {
 		return nil, err
 	}
 
 	conf := NewDefaultConfig()
+
 	conf.API.AuthToken = config.DNS_API_TOKEN
 	conf.API.ZoneID = config.ZONE_ID
-
 	updateIntIfExists(&conf.Provider.TTL, config.TTL)
 	updateSecondIfExists(&conf.Provider.PollingInterval, config.POLLING_INTERVAL)
 	updateSecondIfExists(&conf.Provider.PropagationTimeout, config.PROPAGATION_TIMEOUT)
@@ -70,10 +69,10 @@ func (l loader) Load(dec acmeserver.ConfigDecoder) (providers.DNSProvider, error
 }
 
 var defaultLoader = loader{}
-var providerName = acmeserver.DNSProvider("cloudflare")
+var providerName = providers.DNSProviderName("cloudflare")
 
 func init() {
-	acmeserver.RegisterDNSProvider(providerName, defaultLoader)
+	providers.RegisterDNSProvider(providerName, defaultLoader)
 }
 
 type ProviderConfig struct {

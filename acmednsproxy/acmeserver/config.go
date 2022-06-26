@@ -13,7 +13,7 @@ type ConfigDecoder interface {
 }
 
 type ConfigFiles struct {
-	DNSType  DNSProvider
+	DNSType  providers.DNSProviderName
 	DNSPath  string
 	AuthType Authenticator
 	AuthPath string

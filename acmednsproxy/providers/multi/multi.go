@@ -4,21 +4,20 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/KalleDK/acmednsproxy/acmednsproxy/acmeserver"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"gopkg.in/yaml.v3"
 )
 
 type MultiProvider struct {
-	providers map[string]providers.DNSProvider
+	Providers map[string]providers.DNSProvider
 }
 
 func (mp *MultiProvider) getProvider(domain string) (p providers.DNSProvider, err error) {
 	domain_parts := strings.Split(domain, ".")
 	for len(domain_parts) > 0 {
 		domain_stub := strings.Join(domain_parts, ".")
-		p, ok := mp.providers[domain_stub]
+		p, ok := mp.Providers[domain_stub]
 		if ok {
 			return p, nil
 		}
@@ -57,13 +56,13 @@ func (mp *MultiProvider) CreateRecord(fqdn, value string) error {
 
 type yamlentry struct {
 	Domain string
-	Type   acmeserver.DNSProvider
+	Type   providers.DNSProviderName
 	Config yaml.Node
 }
 
 type loader struct{}
 
-func (l loader) Load(d acmeserver.ConfigDecoder) (providers.DNSProvider, error) {
+func (l loader) Load(d providers.ConfigDecoder) (providers.DNSProvider, error) {
 
 	var entries []yamlentry
 
@@ -81,13 +80,13 @@ func (l loader) Load(d acmeserver.ConfigDecoder) (providers.DNSProvider, error) 
 	}
 
 	return &MultiProvider{
-		providers: providers,
+		Providers: providers,
 	}, nil
 }
 
 var defaultLoader = loader{}
-var providerName = acmeserver.DNSProvider("multi")
+var providerName = providers.DNSProviderName("multi")
 
 func init() {
-	acmeserver.RegisterDNSProvider(providerName, defaultLoader)
+	providers.RegisterDNSProvider(providerName, defaultLoader)
 }

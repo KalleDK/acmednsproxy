@@ -11,7 +11,6 @@ import (
 	"path"
 	"time"
 
-	"github.com/KalleDK/acmednsproxy/acmednsproxy/acmeserver"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -29,7 +28,7 @@ type CFConfig struct {
 
 type loader struct{}
 
-func (l loader) Load(d acmeserver.ConfigDecoder) (providers.DNSProvider, error) {
+func (l loader) Load(d providers.ConfigDecoder) (providers.DNSProvider, error) {
 
 	var config CFConfig
 	if err := d.Decode(&config); err != nil {
@@ -78,10 +77,10 @@ func (l loader) Load(d acmeserver.ConfigDecoder) (providers.DNSProvider, error) 
 }
 
 var defaultLoader = loader{}
-var providerName = acmeserver.DNSProvider("httpreq")
+var providerName = providers.DNSProviderName("httpreq")
 
 func init() {
-	acmeserver.RegisterDNSProvider(providerName, defaultLoader)
+	providers.RegisterDNSProvider(providerName, defaultLoader)
 }
 
 // Environment variables names.

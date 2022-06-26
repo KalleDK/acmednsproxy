@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/acmeserver"
+	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
 
 	_ "github.com/KalleDK/acmednsproxy/acmednsproxy/providers/all"
 
@@ -43,7 +44,7 @@ var serveCmd = &cobra.Command{
 		signal.Notify(c, syscall.SIGHUP)
 
 		config := acmeserver.ConfigFiles{
-			DNSType:  acmeserver.DNSProvider("cloudflare"),
+			DNSType:  providers.DNSProviderName("multi"),
 			DNSPath:  providerFile,
 			AuthType: acmeserver.Authenticator("simpleauth"),
 			AuthPath: authFile,

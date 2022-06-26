@@ -18,3 +18,5 @@
 /auth.yaml
 /providers.json
 /providers.yaml
+
+dist/
