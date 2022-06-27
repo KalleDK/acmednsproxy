@@ -1,2 +1,0 @@
-ACMEDNSPROXY_OPTS="-a /etc/acmednsproxy/auth.yaml -p /etc/acmednsproxy/providers.yaml"
-#ACMEDNSPROXY_OPTS="-a /etc/acmednsproxy/auth.yaml -p /etc/acmednsproxy/providers.yaml -c /etc/acmednsproxy/server.crt -k /etc/acmednsproxy/server.key"
