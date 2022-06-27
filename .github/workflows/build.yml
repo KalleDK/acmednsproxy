@@ -94,7 +94,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          path: ./packages/repo.tar.gz
+          path: ./packages
           if-no-files-found: error
       - name: Upload artifact
         uses: actions/upload-artifact@v3
