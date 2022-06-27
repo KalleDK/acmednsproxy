@@ -25,7 +25,6 @@ nfpms:
   - package_name: acmednsproxy-tools
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
     formats:
-      - apk
       - deb
 changelog:
   sort: asc

@@ -29,7 +29,6 @@ nfpms:
   - package_name: acmednsproxy
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
     formats:
-      - apk
       - deb
     contents:
       - src: ./debian/acmednsproxy.service
@@ -38,12 +37,6 @@ nfpms:
       - src: ./debian/acmednsproxy.default
         dst: /etc/default/acmednsproxy
         packager: deb
-      - src: ./alpine/acmednsproxy.initd
-        dst: /etc/init.d/acmednsproxy
-        packager: apk
-      - src: ./alpine/acmednsproxy.confd
-        dst: /etc/conf.d/acmednsproxy
-        packager: apk
       - src: ./config/auth.yaml
         dst: /etc/acmednsproxy/auth.yaml
         type: config
