@@ -79,7 +79,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Alpine Build APK
         id: build_alpine
-        uses: KalleDK/actions-abuild@v0.0.19
+        uses: KalleDK/actions-abuild@v0.0.21
         with:
           abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
           abuild_prefix: ./alpine
@@ -90,6 +90,7 @@ jobs:
           abuild_key_name:  ${{ secrets.ABUILD_KEY_NAME }}
           abuild_key: ${{ secrets.ABUILD_KEY }}
           abuild_key_pub: ${{ secrets.ABUILD_KEY_PUB }}
+          abuild_repo_url: https://kalledk.github.io/alpinerepo
       - name: Display structure of downloaded files
         run: ls -R
       - name: Upload artifact
@@ -98,13 +99,6 @@ jobs:
           name: acmednsproxy-alpine-repo
           path: ${{ steps.build_alpine.outputs.repo_path }}
           if-no-files-found: error
-      - name: Generate indexes
-        env:
-          BASE_URL: https://kalledk.github.io/alpinerepo
-          REPO_NAME: acmednsproxy
-          KEY_NAME: ${{ steps.build_alpine.outputs.key_name }}
-          REPO_DEST: ${{ steps.build_alpine.outputs.repo_path }}
-        run: ./scripts/generate_index.sh
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
