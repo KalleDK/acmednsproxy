@@ -105,6 +105,7 @@ jobs:
           folder: ${{ steps.build_alpine.outputs.repo_path }} # The folder the action should deploy.
           target-folder: docs
           repository-name: KalleDK/alpinerepo
+          token: ${{ secrets.DEPLOY_TOKEN }}
   
   flaf:
     needs: [archive, server, tools, alpine]
