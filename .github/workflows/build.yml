@@ -88,6 +88,8 @@ jobs:
           abuild_key_name:  ${{ secrets.ABUILD_KEY_NAME }}
           abuild_key: ${{ secrets.ABUILD_KEY }}
           abuild_key_pub: ${{ secrets.ABUILD_KEY_PUB }}
+      - name: Display structure of downloaded files
+        run: ls -R
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
