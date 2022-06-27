@@ -78,7 +78,7 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
       - name: Alpine Build APK
-        uses: KalleDK/actions-abuild@v0.0.10
+        uses: KalleDK/actions-abuild@v0.0.11
         with:
           abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
           abuild_prefix: ./alpine
@@ -94,10 +94,16 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
+          path: ./packages/repo.tar.gz
+          if-no-files-found: error
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
           name: acmednsproxy-alpine
           path: |
             ./packages/workspace/x86_64/*.apk
             ./packages/workspace/x86_64/*.tar.gz
+            ./packages/workspace/*.rsa.pub
           if-no-files-found: error
   
   flaf:
