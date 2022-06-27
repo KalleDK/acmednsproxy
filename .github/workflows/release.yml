@@ -9,25 +9,27 @@ jobs:
     name: Build APK
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout source code
-      uses: actions/checkout@v3
-      with:
-        set-safe-directory: ${{ github.workspace }}
-    - name: Alpine Build APK
-      uses: KalleDK/actions-abuild@v0.0.2
-      with:
-        abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
-        abuild_prefix: ./alpine
-        abuild_pkg_ver: ${{ github.ref_name }}
-        abuild_pkg_rel: 1
-        abuild_key_name:  ${{ secrets.ABUILD_KEY_NAME }}
-        abuild_key: ${{ secrets.ABUILD_KEY }}
-        abuild_key_pub: ${{ secrets.ABUILD_KEY_PUB }}
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: |
-          ${{ github.workspace }}/packages/workspace/x86_64/*.apk
-          ${{ github.workspace }}/packages/workspace/x86_64/APKINDEX.tar.gz
+      - name: Checkout source code
+        uses: actions/checkout@v3
+      - name: Alpine Build APK
+        id: build_alpine
+        uses: KalleDK/actions-abuild@v0.0.22
+        with:
+          abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
+          abuild_prefix: ./alpine
+          abuild_repo_name: acmednsproxy
+          abuild_pkg_ver: ${{ github.ref_name }}
+          abuild_pkg_commit: ${{ github.sha }}
+          abuild_pkg_rel: 1
+          abuild_key_name:  ${{ secrets.ABUILD_KEY_NAME }}
+          abuild_key: ${{ secrets.ABUILD_KEY }}
+          abuild_key_pub: ${{ secrets.ABUILD_KEY_PUB }}
+          abuild_repo_url: https://kalledk.github.io/alpinerepo
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: ${{ steps.build_alpine.outputs.repo_path }} # The folder the action should deploy.
+          target-folder: docs
+          repository-name: KalleDK/alpinerepo
+          token: ${{ secrets.DEPLOY_TOKEN }}
           

@@ -3,7 +3,7 @@ on:
     branches:
     - main
 
-name: Make Relase
+name: Make Snapshot
 jobs:
   archive:
     name: Build Binary
@@ -99,13 +99,6 @@ jobs:
           name: acmednsproxy-alpine-repo
           path: ${{ steps.build_alpine.outputs.repo_path }}
           if-no-files-found: error
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: ${{ steps.build_alpine.outputs.repo_path }} # The folder the action should deploy.
-          target-folder: docs
-          repository-name: KalleDK/alpinerepo
-          token: ${{ secrets.DEPLOY_TOKEN }}
   
   flaf:
     needs: [archive, server, tools, alpine]
