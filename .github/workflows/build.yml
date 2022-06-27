@@ -98,6 +98,10 @@ jobs:
           name: acmednsproxy-alpine-repo
           path: ${{ steps.build_alpine.outputs.repo_path }}
           if-no-files-found: error
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: ${{ steps.build_alpine.outputs.repo_path }} # The folder the action should deploy.
 
   
   flaf:
