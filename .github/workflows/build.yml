@@ -95,8 +95,8 @@ jobs:
         with:
           name: acmednsproxy-alpine
           path: |
-            ./packages/*.apk
-            ./packages/*.tar.gz
+            ./packages/workspace/x86_64/*.apk
+            ./packages/workspace/x86_64/*.tar.gz
           if-no-files-found: error
   
   flaf:
