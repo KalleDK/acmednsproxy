@@ -78,7 +78,7 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
       - name: Alpine Build APK
-        uses: KalleDK/actions-abuild@v0.0.14
+        uses: KalleDK/actions-abuild@v0.0.15
         with:
           abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
           abuild_prefix: ./alpine
