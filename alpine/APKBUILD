@@ -7,7 +7,7 @@ pkgdesc="A small certmgr service"
 url="https://github.com/KalleDK/${pkgname}/"
 arch="all"
 license="MIT"
-commit=${ADP_COMMIT}
+commit=${GIT_COMMIT}
 source="${pkgname}-${commit}.tar.gz::https://github.com/KalleDK/${pkgname}/archive/${commit}.tar.gz
         ${pkgname}.initd
         ${pkgname}.confd

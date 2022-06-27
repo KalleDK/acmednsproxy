@@ -78,12 +78,12 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
       - name: Alpine Build APK
-        uses: KalleDK/actions-abuild@v0.0.5
+        uses: KalleDK/actions-abuild@v0.0.6
         with:
           abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
           abuild_prefix: ./alpine
           abuild_pkg_ver: 0.0.0_git123
-          abuild_commit: ${{ github.sha }}
+          abuild_pkg_commit: ${{ github.sha }}
           abuild_pkg_rel: 1
           abuild_key_name:  ${{ secrets.ABUILD_KEY_NAME }}
           abuild_key: ${{ secrets.ABUILD_KEY }}
