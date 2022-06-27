@@ -103,7 +103,8 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: ${{ steps.build_alpine.outputs.repo_path }} # The folder the action should deploy.
-
+          target-folder: docs
+          repository-name: KalleDK/alpinerepo
   
   flaf:
     needs: [archive, server, tools, alpine]
