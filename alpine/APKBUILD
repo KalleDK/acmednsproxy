@@ -1,8 +1,8 @@
 # Contributor: Kalle M. Aagaard <alpine@k-moeller.dk>
 # Maintainer: Kalle M. Aagaard <alpine@k-moeller.dk>
 pkgname=acmednsproxy
-pkgver=0.0.47
-pkgrel=1
+pkgver=${PKG_VER}
+pkgrel=${PKG_REL:-1}
 pkgdesc="A small certmgr service"
 url="https://github.com/KalleDK/${pkgname}/"
 arch="all"
