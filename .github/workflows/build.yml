@@ -78,7 +78,8 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
       - name: Alpine Build APK
-        uses: KalleDK/actions-abuild@v0.0.16
+        id: build_alpine
+        uses: KalleDK/actions-abuild@v0.0.17
         with:
           abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
           abuild_prefix: ./alpine
@@ -94,7 +95,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          path: ./packages
+          path: ${{ steps.build_alpine.outputs.repo_path }}
           if-no-files-found: error
       - name: Upload artifact
         uses: actions/upload-artifact@v3
