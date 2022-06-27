@@ -26,6 +26,7 @@ build() {
     go build -v -ldflags=" \
         -X 'github.com/KalleDK/acmednsproxy/cmd/acmednsproxy/cmd.defaultAuthFile=/etc/acmednsproxy/auth.yaml' \
         -X 'github.com/KalleDK/acmednsproxy/cmd/acmednsproxy/cmd.defaultProviderFile=/etc/acmednsproxy/providers.yaml' \
+        -X 'github.com/KalleDK/acmednsproxy/acmednsproxy.Version=${pkgver}' \
     " -o ${builddir}/${pkgname} ./cmd/${pkgname}
     go build -v -o ${builddir}/adpcrypt ./cmd/adpcrypt
 }
