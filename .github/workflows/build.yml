@@ -18,8 +18,11 @@ jobs:
           set -ex
           sudo apt-get update -y -q
           sudo apt-get install -y -q musl-dev
-          printf -- '${{ secrets.ABUILD_KEY }}' > apk.rsa
-          ls -la
+      - name: Install APK key
+        run: |
+          set -ex
+          printf -- '${{ secrets.ABUILD_KEY }}' > ${{ secrets.ABUILD_KEY_NAME }}.rsa
+          printf -- '${{ secrets.ABUILD_KEY_PUB }}' > ${{ secrets.ABUILD_KEY_NAME }}.rsa.pub
       - name: Build packages
         uses: goreleaser/goreleaser-action@v3
         with:
@@ -28,9 +31,12 @@ jobs:
           args: release --config goreleaser.yaml --rm-dist --snapshot
         env:
           ABUILD_KEY_NAME: ${{ secrets.ABUILD_KEY_NAME }}
-      - uses: KalleDK/actions-apkrepo@v0.0.6
+      - uses: KalleDK/actions-apkrepo@v0.0.7
         with:
           abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
+          abuild_key: ${{ secrets.ABUILD_KEY }}
+          abuild_key_pub: ${{ secrets.ABUILD_KEY_PUB }}
+          abuild_key_name: ${{ secrets.ABUILD_KEY_NAME }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:

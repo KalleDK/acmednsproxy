@@ -4,8 +4,7 @@
 #
 project_name: acmednsproxy
 env:
-    - ABUILD_KEY_NAME={{ if index .Env "ABUILD_KEY_NAME"  }}{{ .Env.ABUILD_KEY_NAME }}{{ else }}apk.rsa.pub{{ end }}
-    - ABUILD_KEY={{ if index .Env "ABUILD_KEY"  }}{{ .Env.ABUILD_KEY }}{{ else }}apk.rsa{{ end }}
+    - ABUILD_KEY_NAME={{ if index .Env "ABUILD_KEY_NAME"  }}{{ .Env.ABUILD_KEY_NAME }}{{ else }}apk{{ end }}
 
 before:
   hooks:
@@ -149,7 +148,7 @@ nfpms:
       - apk
     apk:
       signature:
-        key_file: "{{ .Env.ABUILD_KEY }}"
+        key_file: "{{ .Env.ABUILD_KEY_NAME }}.rsa"
         key_name: "{{ .Env.ABUILD_KEY_NAME }}"
   - id: main-openrc-apk
     package_name: acmednsproxy-openrc
@@ -163,7 +162,7 @@ nfpms:
       - acmednsproxy
     apk:
       signature:
-        key_file: "{{ .Env.ABUILD_KEY }}"
+        key_file: "{{ .Env.ABUILD_KEY_NAME }}.rsa"
         key_name: "{{ .Env.ABUILD_KEY_NAME }}"
     scripts:
       preinstall: "distros/apk/preinstall.sh"
@@ -186,7 +185,7 @@ nfpms:
       - apk
     apk:
       signature:
-        key_file: "{{ .Env.ABUILD_KEY }}"
+        key_file: "{{ .Env.ABUILD_KEY_NAME }}.rsa"
         key_name: "{{ .Env.ABUILD_KEY_NAME }}"
 changelog:
   sort: asc
