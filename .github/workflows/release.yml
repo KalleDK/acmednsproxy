@@ -3,33 +3,39 @@ on:
     tags:
     - 'v*'
 
-name: Make Relase
+name: Make Release
 jobs:
-  alpine:
-    name: Build APK
+  gorelease:
+    name: Build Binary
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
-      - name: Alpine Build APK
-        id: build_alpine
-        uses: KalleDK/actions-abuild@v0.0.22
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
-          abuild_prefix: ./distros/alpine
-          abuild_repo_name: acmednsproxy
-          abuild_pkg_ver: ${{ github.ref_name }}
-          abuild_pkg_commit: ${{ github.sha }}
-          abuild_pkg_rel: 1
-          abuild_key_name:  ${{ secrets.ABUILD_KEY_NAME }}
-          abuild_key: ${{ secrets.ABUILD_KEY }}
-          abuild_key_pub: ${{ secrets.ABUILD_KEY_PUB }}
-          abuild_repo_url: https://kalledk.github.io/alpinerepo
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4
+           go-version-file: 'go.mod'
+      - name: Install musl-tools
+        run: |
+          set -ex
+          sudo apt-get update -y -q
+          sudo apt-get install -y -q musl-dev
+          printf -- '${{ secrets.ABUILD_KEY }}' > apk.rsa
+          ls -la
+      - name: Build packages
+        uses: goreleaser/goreleaser-action@v3
         with:
-          folder: ${{ steps.build_alpine.outputs.repo_path }} # The folder the action should deploy.
-          target-folder: docs
-          repository-name: KalleDK/alpinerepo
-          token: ${{ secrets.DEPLOY_TOKEN }}
+          distribution: goreleaser
+          version: latest
+          args: release --config goreleaser.yaml --rm-dist
+        env:
+          ABUILD_KEY_NAME: ${{ secrets.ABUILD_KEY_NAME }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: acmednsproxy-archive
+          path: |
+            ./dist/*.zip
+            ./dist/*.tar.gz
+            ./dist/*.apk
+            ./dist/*.deb
+          if-no-files-found: error
           
