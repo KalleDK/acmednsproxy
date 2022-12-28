@@ -17,7 +17,7 @@ jobs:
         run: |
           set -ex
           sudo apt-get update -y
-          sudo apt-get install -y musl-tool
+          sudo apt-get install -y musl-dev
       - name: Build packages
         uses: goreleaser/goreleaser-action@v3
         with:
