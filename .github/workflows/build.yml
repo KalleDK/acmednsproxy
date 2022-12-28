@@ -35,4 +35,6 @@ jobs:
           path: |
             ./dist/*.zip
             ./dist/*.tar.gz
+            ./dist/*.apk
+            ./dist/*.deb
           if-no-files-found: error
