@@ -3,6 +3,10 @@
 # Make sure to check the documentation at https://goreleaser.com
 #
 project_name: acmednsproxy
+env:
+    - ABUILD_KEY_NAME={{ if index .Env "ABUILD_KEY_NAME"  }}{{ .Env.ABUILD_KEY_NAME }}{{ else }}apk.rsa.pub{{ end }}
+    - ABUILD_KEY={{ if index .Env "ABUILD_KEY"  }}{{ .Env.ABUILD_KEY }}{{ else }}apk.rsa{{ end }}
+
 before:
   hooks:
     - go mod tidy
@@ -137,8 +141,8 @@ nfpms:
       - apk
     apk:
       signature:
-        key_file: alpine@k-moeller.dk-63ab8b7c.rsa
-        key_name: alpine@k-moeller.dk-63ab8b7c.rsa.pub
+        key_file: "{{ .Env.ABUILD_KEY }}"
+        key_name: "{{ .Env.ABUILD_KEY_NAME }}"
   - id: main-openrc-apk
     package_name: acmednsproxy-openrc
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
@@ -149,8 +153,8 @@ nfpms:
       - "{{ .ProjectName }}"
     apk:
       signature:
-        key_file: alpine@k-moeller.dk-63ab8b7c.rsa
-        key_name: alpine@k-moeller.dk-63ab8b7c.rsa.pub
+        key_file: "{{ .Env.ABUILD_KEY }}"
+        key_name: "{{ .Env.ABUILD_KEY_NAME }}"
     scripts:
       preinstall: "distros/apk/preinstall.sh"
     contents:
@@ -170,8 +174,8 @@ nfpms:
       - apk
     apk:
       signature:
-        key_file: alpine@k-moeller.dk-63ab8b7c.rsa
-        key_name: alpine@k-moeller.dk-63ab8b7c.rsa.pub
+        key_file: "{{ .Env.ABUILD_KEY }}"
+        key_name: "{{ .Env.ABUILD_KEY_NAME }}"
 changelog:
   sort: asc
   filters:
