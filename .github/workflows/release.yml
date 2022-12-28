@@ -27,6 +27,7 @@ jobs:
           version: latest
           args: release --config goreleaser.yaml --rm-dist
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ABUILD_KEY_NAME: ${{ secrets.ABUILD_KEY_NAME }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
