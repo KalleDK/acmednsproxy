@@ -100,7 +100,7 @@ archives:
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ .Version }}-next"
+  name_template: "{{ .Version }}next"
 nfpms:
   - id: main-deb
     builds:
