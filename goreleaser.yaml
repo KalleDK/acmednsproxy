@@ -116,7 +116,7 @@ nfpms:
     formats:
       - deb
     dependencies:
-      - "{{ .ProjectName }}"
+      - acmednsproxy
     scripts:
       preinstall: "distros/deb/preinstall.sh"
     contents:
@@ -150,7 +150,7 @@ nfpms:
     formats:
       - apk
     dependencies:
-      - "{{ .ProjectName }}"
+      - acmednsproxy
     apk:
       signature:
         key_file: "{{ .Env.ABUILD_KEY }}"
