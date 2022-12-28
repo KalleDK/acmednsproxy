@@ -18,9 +18,8 @@ jobs:
           set -ex
           sudo apt-get update -y -q
           sudo apt-get install -y -q musl-dev
-          echo "${{ secrets.ABUILD_KEY_NAME }}" > apk.rsa
+          printf "${{ secrets.ABUILD_KEY_NAME }}" > apk.rsa
           ls -la
-          cat apk.rsa
       - name: Build packages
         uses: goreleaser/goreleaser-action@v3
         with:
