@@ -149,7 +149,7 @@ nfpms:
     apk:
       signature:
         key_file: "{{ .Env.ABUILD_KEY_NAME }}.rsa"
-        key_name: "{{ .Env.ABUILD_KEY_NAME }}"
+        key_name: "alpine@k-moeller.dk-62068d1b"
   - id: main-openrc-apk
     package_name: acmednsproxy-openrc
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
@@ -163,7 +163,7 @@ nfpms:
     apk:
       signature:
         key_file: "{{ .Env.ABUILD_KEY_NAME }}.rsa"
-        key_name: "{{ .Env.ABUILD_KEY_NAME }}"
+        key_name: "alpine@k-moeller.dk-62068d1b"
     scripts:
       preinstall: "distros/apk/preinstall.sh"
     contents:
@@ -186,7 +186,7 @@ nfpms:
     apk:
       signature:
         key_file: "{{ .Env.ABUILD_KEY_NAME }}.rsa"
-        key_name: "{{ .Env.ABUILD_KEY_NAME }}"
+        key_name: "alpine@k-moeller.dk-62068d1b"
 changelog:
   sort: asc
   filters:
