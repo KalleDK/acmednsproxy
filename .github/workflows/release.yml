@@ -16,7 +16,7 @@ jobs:
         uses: KalleDK/actions-abuild@v0.0.22
         with:
           abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
-          abuild_prefix: ./alpine
+          abuild_prefix: ./distros/alpine
           abuild_repo_name: acmednsproxy
           abuild_pkg_ver: ${{ github.ref_name }}
           abuild_pkg_commit: ${{ github.sha }}

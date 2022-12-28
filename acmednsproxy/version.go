@@ -1,3 +1,8 @@
 package acmednsproxy
 
-var Version = "unknown"
+var (
+	Version = "unknown"
+	Goos    = "unknown"
+	Goarch  = "unknown"
+	Binary  = "unknown"
+)

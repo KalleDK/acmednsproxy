@@ -55,7 +55,11 @@ func getBasicAuth(c *gin.Context) (user string, pass string, err error) {
 
 func verifyPermission(a auth.Authenticator) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		user, pass, _ := getBasicAuth(c)
+		user, pass, err := getBasicAuth(c)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 
 		var json combinedMessage
 		if err := c.ShouldBindJSON(&json); err != nil {

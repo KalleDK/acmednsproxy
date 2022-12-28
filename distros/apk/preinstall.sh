@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 set -e
 
@@ -12,12 +12,12 @@ fi
 if ! getent passwd acmednsproxy >/dev/null; then
     # Adding system user: acmednsproxy.
     adduser \
-      --system \
-      --disabled-login \
-      --ingroup acmednsproxy \
-      --no-create-home \
-      --home /nonexistent \
-      --gecos "AcmeDNSProxy Server" \
-      --shell /bin/false \
+      -S \
+      -G acmednsproxy \
+      -H \
+      -h /nonexistent \
+      -g "AcmeDNSProxy Server" \
+      -s /bin/false \
+      -D \
       acmednsproxy  >/dev/null
 fi
