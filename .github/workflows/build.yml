@@ -31,7 +31,7 @@ jobs:
           args: release --config goreleaser.yaml --rm-dist --snapshot
         env:
           ABUILD_KEY_NAME: ${{ secrets.ABUILD_KEY_NAME }}
-      - uses: KalleDK/actions-apkrepo@v0.0.7
+      - uses: KalleDK/actions-apkrepo@v0.0.8
         with:
           abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
           abuild_key: ${{ secrets.ABUILD_KEY }}
