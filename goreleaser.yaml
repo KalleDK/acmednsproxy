@@ -141,7 +141,7 @@ nfpms:
   - id: main-apk
     builds:
       - main-musl-build
-    file_name_template: "{{ .PackageName }}-{{ .Version }}_{{ .ShortCommit }}-r1"
+    file_name_template: "{{ .PackageName }}-{{ .Version }}"
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
     license: MIT
     homepage: https://github.com/KalleDK/acmednsproxy
@@ -153,7 +153,7 @@ nfpms:
         key_name: "alpine@k-moeller.dk-62068d1b"
   - id: main-openrc-apk
     package_name: acmednsproxy-openrc
-    file_name_template: "{{ .PackageName }}-{{ .Version }}_{{ .ShortCommit }}-r1"
+    file_name_template: "{{ .PackageName }}-{{ .Version }}"
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
     meta: true
     license: MIT
@@ -178,7 +178,7 @@ nfpms:
         dst: /etc/conf.d/{{ .ProjectName }}
   - id: tool-apk
     package_name: acmednsproxy-tools
-    file_name_template: "{{ .PackageName }}-{{ .Version }}_{{ .ShortCommit }}-r1"
+    file_name_template: "{{ .PackageName }}-{{ .Version }}"
     builds:
       - tool-musl-build
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
