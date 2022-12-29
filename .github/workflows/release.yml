@@ -21,7 +21,8 @@ jobs:
       - name: Install APK key
         run: |
           set -ex
-          printf -- '${{ secrets.ABUILD_KEY }}' > apk.rsa
+          printf -- '${{ secrets.ABUILD_KEY }}' > ${{ secrets.ABUILD_KEY_NAME }}.rsa
+          printf -- '${{ secrets.ABUILD_KEY_PUB }}' > ${{ secrets.ABUILD_KEY_NAME }}.rsa.pub
       - name: Build packages
         uses: goreleaser/goreleaser-action@v3
         with:
