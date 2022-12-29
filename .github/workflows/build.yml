@@ -40,11 +40,6 @@ jobs:
           abuild_key_name: ${{ secrets.ABUILD_KEY_NAME }}
           abuild_repo_url: https://kalledk.github.io
           abuild_repo_name: acmednsproxy
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: ${{ steps.build_apkrepo.outputs.repo_path }} # The folder the action should deploy.
-          target-folder: apk
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:

@@ -32,6 +32,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ABUILD_KEY: apk.rsa
           ABUILD_KEY_NAME: ${{ secrets.ABUILD_KEY_NAME }}
+      - uses: KalleDK/actions-apkrepo@v0.0.12
+        id: build_apkrepo
+        with:
+          abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
+          abuild_key: ${{ secrets.ABUILD_KEY }}
+          abuild_key_pub: ${{ secrets.ABUILD_KEY_PUB }}
+          abuild_key_name: ${{ secrets.ABUILD_KEY_NAME }}
+          abuild_repo_url: https://kalledk.github.io
+          abuild_repo_name: acmednsproxy
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: ${{ steps.build_apkrepo.outputs.repo_path }} # The folder the action should deploy.
+          target-folder: apk
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
