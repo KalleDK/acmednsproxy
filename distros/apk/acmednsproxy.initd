@@ -3,6 +3,7 @@
 name="$SVCNAME"
 supervisor="supervise-daemon"
 command="/usr/bin/$SVCNAME"
+command_user="acmednsproxy"
 command_args="serve ${ACMEDNSPROXY_OPTS}"
 extra_started_commands="reload log"
 supervise_daemon_args="--stdout '${ACMEDNSPROXY_LOG_FILE}' --stderr '${ACMEDNSPROXY_LOG_FILE}'"

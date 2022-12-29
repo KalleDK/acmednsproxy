@@ -1,0 +1,3 @@
+---
+authenticator: auth.yaml
+provider: provider.yaml

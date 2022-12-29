@@ -1,5 +1,7 @@
 *.rsa
 *.rsa.pub
+goreleaser.yaml
+goreleaser-small.yaml
 
 # Binaries for programs and plugins
 *.exe

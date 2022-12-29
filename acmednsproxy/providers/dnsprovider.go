@@ -1,34 +1,92 @@
 package providers
 
 import (
-	"log"
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"os"
 
-	"github.com/go-acme/lego/v4/challenge/dns01"
+	"gopkg.in/yaml.v3"
 )
 
+type Record struct {
+	Fqdn  string
+	Value string
+}
+
+func (r Record) Token() string {
+	return fmt.Sprintf("%s=%s", r.Fqdn, r.Value)
+}
+
 type DNSProvider interface {
-	CreateRecord(fqdn, value string) error
-	RemoveRecord(fqdn, value string) error
+	io.Closer
+	Shutdown(ctx context.Context) error
+	CreateRecord(record Record) error
+	RemoveRecord(record Record) error
 }
 
-func Present(p DNSProvider, domain, token, keyAuth string) error {
-	log.Printf("token %s", token)
-
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	if err := p.CreateRecord(fqdn, value); err != nil {
-		return err
-	}
-
-	return nil
+type Decoder interface {
+	Decode(v interface{}) error
 }
 
-// CleanUp removes the TXT record matching the specified parameters.
-func CleanUp(p DNSProvider, domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+type Type string
 
-	if err := p.RemoveRecord(fqdn, value); err != nil {
-		return err
+type Loader func(dec Decoder) (DNSProvider, error)
+
+var providerMap = map[Type]Loader{}
+
+func (t Type) Register(loader Loader) {
+	providerMap[t] = loader
+}
+
+func (u Type) LoadFromDecoder(dec Decoder) (p DNSProvider, err error) {
+	loader, ok := providerMap[u]
+	if !ok {
+		return nil, errors.New("invalid provider " + string(u))
+	}
+	return loader(dec)
+}
+
+func (u Type) LoadFromStream(r io.Reader) (p DNSProvider, err error) {
+	return u.LoadFromDecoder(yaml.NewDecoder(r))
+}
+
+func (u Type) LoadFromFile(path string) (p DNSProvider, err error) {
+	r, err := os.Open(path)
+	if err != nil {
+		return
+	}
+	return u.LoadFromStream(r)
+}
+
+type yamlConfig struct {
+	Type Type `yaml:"type"`
+}
+
+func LoadFromDecoder(dec Decoder) (p DNSProvider, err error) {
+	var node yaml.Node
+	var config yamlConfig
+
+	if err = dec.Decode(&node); err != nil {
+		return
 	}
 
-	return nil
+	if err = node.Decode(&config); err != nil {
+		return
+	}
+
+	return config.Type.LoadFromDecoder(&node)
+}
+
+func LoadFromStream(r io.Reader) (p DNSProvider, err error) {
+	return LoadFromDecoder(yaml.NewDecoder(r))
+}
+
+func LoadFromFile(path string) (p DNSProvider, err error) {
+	r, err := os.Open(path)
+	if err != nil {
+		return
+	}
+	return LoadFromStream(r)
 }

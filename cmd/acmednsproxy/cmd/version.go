@@ -25,7 +25,7 @@ import (
 var versionCmd = &cobra.Command{
 	Use: "version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("%s version %s%s %s/%s\n", acmednsproxy.Binary, acmednsproxy.Binary, acmednsproxy.Version, acmednsproxy.Goos, acmednsproxy.Goarch)
+		fmt.Printf("%s version %s%s %s/%s %s\n", acmednsproxy.Binary, acmednsproxy.Binary, acmednsproxy.Version, acmednsproxy.Goos, acmednsproxy.Goarch, acmednsproxy.Libc)
 	},
 }
 

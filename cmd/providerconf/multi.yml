@@ -1,0 +1,18 @@
+---
+type: multi
+providers:
+- domains:
+  - example.com
+  config:
+    type: cloudflare
+    ttl: 150
+    zoneid: Zpe7L9jRCkag6PuNC6b5a17gMtf156Ozq7tsRfhk
+    authtoken: 7dZbonk5j5nDAq51Wd7nAuDF4rJl3FTQ_xYIrrKx
+- domains:
+  - sub1.example.com
+  - sub2.example.com
+  config:
+    type: cloudflare
+    ttl: 150
+    zoneid: Zpe7L9jRCkag6PuNC6b5a17gMtf156Ozq7tsRfhk
+    authtoken: 7dZbonk5j5nDAq51Wd7nAuDF4rJl3FTQ_xYIrrKx

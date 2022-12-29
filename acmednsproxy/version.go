@@ -5,4 +5,5 @@ var (
 	Goos    = "unknown"
 	Goarch  = "unknown"
 	Binary  = "unknown"
+	Libc    = "unknown"
 )

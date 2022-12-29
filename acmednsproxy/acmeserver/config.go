@@ -2,51 +2,65 @@ package acmeserver
 
 import (
 	"os"
+	"path/filepath"
 
-	"github.com/KalleDK/acmednsproxy/acmednsproxy/auth"
-	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
+	"github.com/KalleDK/acmednsproxy/acmednsproxy/acmeservice"
 	"gopkg.in/yaml.v3"
 )
 
-type ConfigDecoder interface {
-	Decode(v interface{}) error
+const (
+	DefaultAddr    = ":8080"
+	DefaultTLSAddr = ":9090"
+)
+
+type Config struct {
+	Listen string
+	TLS    TLSConfig
+	Proxy  acmeservice.Config `yaml:",inline"`
 }
 
-type ConfigFiles struct {
-	DNSType  providers.DNSProviderName
-	DNSPath  string
-	AuthType Authenticator
-	AuthPath string
+func (c Config) HasTLS() bool {
+	return !c.TLS.IsEmpty()
 }
 
-func (c ConfigFiles) LoadAuth() (p auth.Authenticator, err error) {
-	fp, err := os.Open(c.AuthPath)
+func loadConfig(path string) (config Config, err error) {
+	conf_dir := filepath.Dir(path)
+
+	r, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return
 	}
-	defer fp.Close()
+	defer r.Close()
 
-	dec := yaml.NewDecoder(fp)
-
-	if p, err = c.AuthType.Load(dec); err != nil {
-		return nil, err
+	if err = yaml.NewDecoder(r).Decode(&config); err != nil {
+		return
 	}
 
-	return p, nil
-}
+	if config.HasTLS() {
+		if !filepath.IsAbs(config.TLS.CertFile) {
+			config.TLS.CertFile = filepath.Join(conf_dir, config.TLS.CertFile)
+		}
 
-func (c ConfigFiles) LoadProvider() (p providers.DNSProvider, err error) {
-	fp, err := os.Open(c.DNSPath)
-	if err != nil {
-		return nil, err
-	}
-	defer fp.Close()
-
-	dec := yaml.NewDecoder(fp)
-
-	if p, err = c.DNSType.Load(dec); err != nil {
-		return nil, err
+		if !filepath.IsAbs(config.TLS.KeyFile) {
+			config.TLS.KeyFile = filepath.Join(conf_dir, config.TLS.KeyFile)
+		}
 	}
 
-	return p, nil
+	if config.Listen == "" {
+		if config.HasTLS() {
+			config.Listen = DefaultTLSAddr
+		} else {
+			config.Listen = DefaultAddr
+		}
+	}
+
+	if !filepath.IsAbs(config.Proxy.Provider) {
+		config.Proxy.Provider = filepath.Join(conf_dir, config.Proxy.Provider)
+	}
+
+	if !filepath.IsAbs(config.Proxy.Authenticator) {
+		config.Proxy.Authenticator = filepath.Join(conf_dir, config.Proxy.Authenticator)
+	}
+
+	return config, nil
 }

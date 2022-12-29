@@ -1,0 +1,5 @@
+---
+type: simpleauth
+permissions:
+  sub.example.com:
+    test: $2a$10$OSfQuj65NxhybVLDY.rg0.zc8IGYC4pq348kdYZeEEOMAJVCR7LnG

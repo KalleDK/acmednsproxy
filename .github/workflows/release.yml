@@ -3,35 +3,28 @@ on:
     tags:
     - 'v*'
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 name: Make Release
 jobs:
-  gorelease:
+  build:
     name: Build Binary
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
            go-version-file: 'go.mod'
-      - name: Install musl-tools
-        run: |
-          set -ex
-          sudo apt-get update -y -q
-          sudo apt-get install -y -q musl-dev
-      - name: Install APK key
-        run: |
-          set -ex
-          printf -- '${{ secrets.ABUILD_KEY }}' > apk.rsa
       - name: Build packages
-        uses: goreleaser/goreleaser-action@v3
+        uses: goreleaser/goreleaser-action@v4
         with:
           distribution: goreleaser
           version: latest
-          args: release --config goreleaser.yaml --rm-dist
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ABUILD_KEY: apk.rsa
-          ABUILD_KEY_NAME: ${{ secrets.ABUILD_KEY_NAME }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -42,4 +35,64 @@ jobs:
             ./dist/*.apk
             ./dist/*.deb
           if-no-files-found: error
-          
+  upload-to-repo:
+    name: Upload Apk
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: 'acmednsproxy-archive'
+          path: dist
+      - name: Move apks
+        run: |
+          set -ex
+          mkdir -p pkgs/
+          for x in dist/*.apk; do cp $x pkgs/$(basename $x | sed s/_/-/g | sed s/-x86-64\.apk/-x86_64.apk/ ); done
+          for x in dist/*.deb; do cp $x pkgs/; done
+      - name: Push to apk repo
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.REGISTRY_SSH_KEY }}
+        with:
+          source-directory: 'pkgs'
+          destination-github-username: 'KalleDK'
+          destination-repository-name: 'registry'
+          user-email: apk@k-moeller.dk
+          target-branch: repo
+          target-directory: pkgs/acmednsproxy
+  upload-to-docker:
+    name: Upload Docker
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: 'acmednsproxy-archive'
+          path: dist
+      - name: Move apks
+        run: |
+          set -ex
+          mkdir -p pkgs/
+          for x in dist/*.apk; do cp $x pkgs/$(basename $x | sed 's/_[^_]*_/_/'  ); done
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        with:
+          context: .
+          push: true
+          file: ./docker/Dockerfile
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

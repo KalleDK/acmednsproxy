@@ -1,0 +1,7 @@
+---
+tls:
+  certfile: acmednsproxy.crt
+  keyfile: acmednsproxy.key
+listen: ":8080"
+authenticator: auth.yaml
+provider: provider.yaml

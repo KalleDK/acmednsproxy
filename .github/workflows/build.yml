@@ -10,45 +10,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
            go-version-file: 'go.mod'
-      - name: Install musl-tools
-        run: |
-          set -ex
-          sudo apt-get update -y -q
-          sudo apt-get install -y -q musl-dev
-      - name: Install APK key
-        run: |
-          set -ex
-          printf -- '${{ secrets.ABUILD_KEY }}' > ${{ secrets.ABUILD_KEY_NAME }}.rsa
-          printf -- '${{ secrets.ABUILD_KEY_PUB }}' > ${{ secrets.ABUILD_KEY_NAME }}.rsa.pub
       - name: Build packages
-        uses: goreleaser/goreleaser-action@v3
+        uses: goreleaser/goreleaser-action@v4
         with:
           distribution: goreleaser
           version: latest
-          args: release --config goreleaser.yaml --rm-dist --snapshot
-        env:
-          ABUILD_KEY_NAME: ${{ secrets.ABUILD_KEY_NAME }}
-      - uses: KalleDK/actions-apkrepo@v0.0.12
-        id: build_apkrepo
-        with:
-          abuild_packager: Kalle M. Aagaard <alpine@k-moeller.dk>
-          abuild_key: ${{ secrets.ABUILD_KEY }}
-          abuild_key_pub: ${{ secrets.ABUILD_KEY_PUB }}
-          abuild_key_name: ${{ secrets.ABUILD_KEY_NAME }}
-          abuild_repo_url: https://kalledk.github.io
-          abuild_repo_name: acmednsproxy
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: ${{ steps.build_apkrepo.outputs.repo_path }} # The folder the action should deploy.
-          target-folder: apk
+          args: release --clean --snapshot
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: acmednsproxy-archive
+          name: 'acmednsproxy-archive'
           path: |
             ./dist/*.zip
             ./dist/*.tar.gz

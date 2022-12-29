@@ -1,0 +1,16 @@
+version: "2.4"
+
+services:
+  server:
+    image: ghcr.io/kalledk/acmednsproxy:latest
+    restart: always
+    ports:
+    - "9090:9090"
+    volumes:
+    - ./etc:/etc/acmednsproxy:ro
+  cron:
+    image: ghcr.io/kalledk/acmednsproxy-cron:latest
+    restart: always
+    env_file: cron.env
+    volumes:
+    - ./etc:/etc/acmednsproxy
