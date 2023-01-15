@@ -14,13 +14,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 )
 
-type messageRaw struct {
-	Domain  string
-	Token   string
-	KeyAuth string
-}
-
-type messageDefault struct {
+type message struct {
 	FQDN  string
 	Value string
 }
@@ -31,6 +25,27 @@ type combinedMessage struct {
 	KeyAuth string `json:"keyAuth"`
 	FQDN    string `json:"fqdn"`
 	Value   string `json:"value"`
+}
+
+func (c combinedMessage) is_raw() bool {
+	return c.Domain != "" && c.Token != "" && c.KeyAuth != ""
+}
+
+func (c combinedMessage) is_default() bool {
+	return c.FQDN != "" && c.Value != ""
+}
+
+func (c combinedMessage) as_msg() (message, error) {
+	if c.is_default() {
+		return message{c.FQDN, c.Value}, nil
+	}
+
+	if c.is_raw() {
+		fqdn, value := dns01.GetRecord(c.Domain, c.KeyAuth)
+		return message{fqdn, value}, nil
+	}
+
+	return message{}, errors.New("is not a valid request")
 }
 
 func getBasicAuth(c *gin.Context) (user string, pass string, err error) {
@@ -53,6 +68,21 @@ func getBasicAuth(c *gin.Context) (user string, pass string, err error) {
 	return string(parts[0]), string(parts[1]), nil
 }
 
+func parseRequest(c *gin.Context) {
+	var combinedMsg combinedMessage
+	if err := c.ShouldBindJSON(&combinedMsg); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	msg, err := combinedMsg.as_msg()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.Set("message", msg)
+}
+
 func verifyPermission(a auth.Authenticator) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		user, pass, err := getBasicAuth(c)
@@ -61,91 +91,46 @@ func verifyPermission(a auth.Authenticator) func(c *gin.Context) {
 			return
 		}
 
-		var json combinedMessage
-		if err := c.ShouldBindJSON(&json); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+		msg := c.MustGet("message").(message)
 
-		if json.Domain == "" && json.FQDN == "" {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "no domain"})
-			return
-		}
-
-		if json.Domain != "" {
-			if err := a.VerifyPermissions(user, pass, json.Domain); err != nil {
-				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-				return
-			}
-
-			c.Set("message", messageRaw{
-				Domain:  json.Domain,
-				Token:   json.Token,
-				KeyAuth: json.KeyAuth,
-			})
-			return
-		}
-
-		if err := a.VerifyPermissions(user, pass, dns01.UnFqdn(json.FQDN)); err != nil {
+		if err := a.VerifyPermissions(user, pass, msg.FQDN); err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
-
-		c.Set("message", messageDefault{
-			FQDN:  json.FQDN,
-			Value: json.Value,
-		})
 	}
 }
 
 func presentHandler(provider providers.DNSProvider) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		jsonraw := c.MustGet("message")
+		msg := c.MustGet("message").(message)
 
-		switch json := jsonraw.(type) {
-		case messageRaw:
-
-			if err := providers.Present(provider, json.Domain, json.Token, json.KeyAuth); err != nil {
-				c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{"error": err.Error()})
-				return
-			}
-
-			c.JSON(http.StatusOK, gin.H{"status": "ok", "value": json.Token})
-		case messageDefault:
-			if err := provider.CreateRecord(json.FQDN, json.Value); err != nil {
-				c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{"error": err.Error()})
-				return
-			}
-
-			c.JSON(http.StatusOK, gin.H{"status": "ok", "value": json.Value})
-
+		if err := provider.CreateRecord(msg.FQDN, msg.Value); err != nil {
+			c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{"error": err.Error()})
+			return
 		}
+
+		c.JSON(http.StatusOK, gin.H{"status": "ok", "value": msg.Value})
 
 	}
 }
 
 func cleanuptHandler(provider providers.DNSProvider) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		jsonraw := c.MustGet("message")
+		json := c.MustGet("message").(message)
 
-		switch json := jsonraw.(type) {
-		case messageRaw:
-			if err := providers.CleanUp(provider, json.Domain, json.Token, json.KeyAuth); err != nil {
-				c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{"error": err.Error()})
-				return
-			}
-
-			c.JSON(http.StatusOK, gin.H{"status": "ok", "value": json.Token})
-		case messageDefault:
-			if err := provider.RemoveRecord(json.FQDN, json.Value); err != nil {
-				c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{"error": err.Error()})
-				return
-			}
-
-			c.JSON(http.StatusOK, gin.H{"status": "ok", "value": json.Value})
-
+		if err := provider.RemoveRecord(json.FQDN, json.Value); err != nil {
+			c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{"error": err.Error()})
+			return
 		}
+
+		c.JSON(http.StatusOK, gin.H{"status": "ok", "value": json.Value})
 	}
+}
+
+func pong(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"pong": time.Now().String(),
+	})
 }
 
 func NewHandler(a auth.Authenticator, p providers.DNSProvider) (handler http.Handler, err error) {
@@ -154,13 +139,9 @@ func NewHandler(a auth.Authenticator, p providers.DNSProvider) (handler http.Han
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"pong": time.Now().String(),
-		})
-	})
-	router.POST("/present", verifyPermission(a), presentHandler(p))
-	router.POST("/cleanup", verifyPermission(a), cleanuptHandler(p))
+	router.GET("/ping", pong)
+	router.POST("/present", parseRequest, verifyPermission(a), presentHandler(p))
+	router.POST("/cleanup", parseRequest, verifyPermission(a), cleanuptHandler(p))
 
 	return router, nil
 }
