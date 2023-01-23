@@ -6,7 +6,6 @@ import (
 
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
 	"github.com/go-acme/lego/v4/challenge/dns01"
-	"gopkg.in/yaml.v3"
 )
 
 type MultiProvider struct {
@@ -54,39 +53,58 @@ func (mp *MultiProvider) CreateRecord(fqdn, value string) error {
 	return nil
 }
 
-type yamlentry struct {
-	Domain string
-	Type   providers.DNSProviderName
-	Config yaml.Node
+func (mp *MultiProvider) Close() error {
+	var err error = nil
+	for _, p := range mp.Providers {
+		if err_s := p.Close(); err_s != nil {
+			err = err_s
+		}
+	}
+	return err
 }
 
-type loader struct{}
+var Multi = providers.Type("multi")
 
-func (l loader) Load(d providers.ConfigDecoder) (providers.DNSProvider, error) {
+type RawYAML struct {
+	unmarshal providers.YAMLUnmarshaler
+}
 
-	var entries []yamlentry
+func (r *RawYAML) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	r.unmarshal = unmarshal
+	return nil
+}
 
-	if err := d.Decode(&entries); err != nil {
-		return nil, err
+type SubConfig struct {
+	Domain string
+	Type   providers.Type
+	Config RawYAML
+}
+
+type Config []SubConfig
+
+func FromConfig(config Config, config_dir string) (*MultiProvider, error) {
+	p := &MultiProvider{
+		Providers: map[string]providers.DNSProvider{},
 	}
-
-	providers := map[string]providers.DNSProvider{}
-	for _, entry := range entries {
-		p, err := entry.Type.Load(&entry.Config)
+	for _, subconf := range config {
+		sub_p, err := subconf.Type.Load(subconf.Config.unmarshal, config_dir)
 		if err != nil {
 			return nil, err
 		}
-		providers[entry.Domain] = p
+		p.Providers[subconf.Domain] = sub_p
 	}
-
-	return &MultiProvider{
-		Providers: providers,
-	}, nil
+	return p, nil
 }
 
-var defaultLoader = loader{}
-var providerName = providers.DNSProviderName("multi")
+func Load(unmarshal providers.YAMLUnmarshaler, config_dir string) (providers.DNSProvider, error) {
+	var conf Config
+	if err := unmarshal(&conf); err != nil {
+		return nil, err
+	}
+
+	return FromConfig(conf, config_dir)
+}
 
 func init() {
-	providers.RegisterDNSProvider(providerName, defaultLoader)
+	Multi.Register(Load)
 }

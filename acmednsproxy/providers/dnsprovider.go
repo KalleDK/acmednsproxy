@@ -1,34 +1,32 @@
 package providers
 
 import (
-	"log"
-
-	"github.com/go-acme/lego/v4/challenge/dns01"
+	"errors"
+	"io"
 )
 
+type YAMLUnmarshaler func(interface{}) error
+
 type DNSProvider interface {
+	io.Closer
 	CreateRecord(fqdn, value string) error
 	RemoveRecord(fqdn, value string) error
 }
 
-func Present(p DNSProvider, domain, token, keyAuth string) error {
-	log.Printf("token %s", token)
+type DNSProviderLoader func(unmarshal YAMLUnmarshaler, config_dir string) (DNSProvider, error)
 
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	if err := p.CreateRecord(fqdn, value); err != nil {
-		return err
+type Type string
+
+func (u Type) Load(unmarshal YAMLUnmarshaler, config_dir string) (p DNSProvider, err error) {
+	loader, ok := providerMap[u]
+	if !ok {
+		return nil, errors.New("invalid provider " + string(u))
 	}
-
-	return nil
+	return loader(unmarshal, config_dir)
 }
 
-// CleanUp removes the TXT record matching the specified parameters.
-func CleanUp(p DNSProvider, domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
-
-	if err := p.RemoveRecord(fqdn, value); err != nil {
-		return err
-	}
-
-	return nil
+func (t Type) Register(loader DNSProviderLoader) {
+	providerMap[t] = loader
 }
+
+var providerMap = map[Type]DNSProviderLoader{}

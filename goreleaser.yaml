@@ -125,6 +125,9 @@ nfpms:
     contents:
       - src: ./config/*
         dst: /etc/{{ .ProjectName }}/
+        type: config|noreplace
+      - src: ./examples/*
+        dst: /usr/share/doc/{{ .ProjectName }}/examples/
       - src: ./distros/deb/{{ .ProjectName }}.service
         dst: /lib/systemd/system/{{ .ProjectName }}.service
       - src: ./distros/deb/{{ .ProjectName }}.default
@@ -171,7 +174,9 @@ nfpms:
     contents:
       - src: ./config/*
         dst: /etc/{{ .ProjectName }}/
-        type: config
+        type: config|noreplace
+      - src: ./examples/*
+        dst: /usr/share/doc/{{ .ProjectName }}/examples/
       - src: ./distros/apk/{{ .ProjectName }}.initd
         dst: /etc/init.d/{{ .ProjectName }}
       - src: ./distros/apk/{{ .ProjectName }}.confd

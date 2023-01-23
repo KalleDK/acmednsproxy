@@ -10,7 +10,7 @@ import (
 	"syscall"
 
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/acmeserver"
-	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
+	"github.com/KalleDK/acmednsproxy/acmednsproxy/acmeservice"
 	"github.com/KalleDK/go-fpr/fpr"
 	"github.com/adrg/xdg"
 
@@ -21,11 +21,10 @@ import (
 )
 
 var (
-	authFile     string
-	providerFile string
-	certFile     string
-	keyFile      string
-	listenAddr   string
+	configFile string
+	certFile   string
+	keyFile    string
+	listenAddr string
 )
 
 var (
@@ -49,25 +48,16 @@ var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "",
 	Long:  "",
-	Run: func(cmd *cobra.Command, args []string) {
-		providerFile, err := getFile(providerFile, "acmednsproxy/providers.yaml")
+	RunE: func(cmd *cobra.Command, args []string) error {
+		configFile, err := getFile(configFile, "acmednsproxy/config.yaml")
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		authFile, err := getFile(authFile, "acmednsproxy/auth.yaml")
+		service, err := acmeservice.NewFromFile(configFile)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
-
-		config := acmeserver.ConfigFiles{
-			DNSType:  providers.DNSProviderName("multi"),
-			DNSPath:  fpr.Resolve(providerFile),
-			AuthType: acmeserver.Authenticator("simpleauth"),
-			AuthPath: fpr.Resolve(authFile),
-		}
-
-		s := acmeserver.New(config)
 
 		c := make(chan os.Signal, 1)
 		signal.Reset(syscall.SIGHUP)
@@ -75,7 +65,7 @@ var serveCmd = &cobra.Command{
 		go func() {
 			for range c {
 				log.Printf("Got A HUP Signal! Now Reloading Conf....\n")
-				s.ReloadConfig()
+				service.Reload()
 			}
 		}()
 		log.Print("Starting server...")
@@ -85,7 +75,7 @@ var serveCmd = &cobra.Command{
 				listenAddr = DefaultTLSAddr
 			}
 			log.Printf("TLS at %s\n", listenAddr)
-			s.ServeTLS(acmeserver.TLSSettings{
+			acmeserver.ServeTLS(service, acmeserver.TLSSettings{
 				Addr:     listenAddr,
 				CertFile: fpr.Resolve(certFile),
 				KeyFile:  fpr.Resolve(keyFile),
@@ -95,10 +85,12 @@ var serveCmd = &cobra.Command{
 				listenAddr = DefaultAddr
 			}
 			log.Printf("Non-TLS at %s\n", listenAddr)
-			s.Serve(acmeserver.Settings{
+			acmeserver.Serve(service, acmeserver.Settings{
 				Addr: listenAddr,
 			})
 		}
+
+		return nil
 
 	},
 }
@@ -106,17 +98,9 @@ var serveCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(serveCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	serveCmd.PersistentFlags().StringVarP(&certFile, "cert", "c", "", "A help for foo")
+	serveCmd.PersistentFlags().StringVarP(&certFile, "cert", "p", "", "A help for foo")
 	serveCmd.PersistentFlags().StringVarP(&keyFile, "key", "k", "", "A help for foo")
 	serveCmd.PersistentFlags().StringVarP(&listenAddr, "addr", "i", "", "A help for foo")
-	serveCmd.PersistentFlags().StringVarP(&authFile, "auth", "a", "", "A help for foo")
-	serveCmd.PersistentFlags().StringVarP(&providerFile, "providers", "p", "", "A help for foo")
+	serveCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "A help for foo")
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

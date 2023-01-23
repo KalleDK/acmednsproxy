@@ -1,0 +1,6 @@
+dsa:
+  fds: $2a$10$Z3YVTBtxNDMzN4H8.YS0n.e1PxY99Rgn3ub3SUvI8oLdla3qi2ZNe
+fds:
+  dsa: $2a$10$ApFpI6oQQx5sVuQX8YCNG.46uRE7WwfWW6jsQzVxUkD8BQiOs8xra
+sub.example.com:
+  test: $2a$10$h5gCwYjDsZ0/blxhM8o5budme8vxDdqRk1xkinkFgP4U2N0i/kzgC

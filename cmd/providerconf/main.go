@@ -5,18 +5,26 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
+	"github.com/KalleDK/acmednsproxy/acmednsproxy/acmeservice"
 	_ "github.com/KalleDK/acmednsproxy/acmednsproxy/providers/all"
-	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers/multi"
 	"gopkg.in/yaml.v3"
 )
 
 const conf_str = `---
-- domain: example.com
-  type: cloudflare
-  config:
-    zone_id: Zpe7L9jRCkag6PuNC6b5a17gMtf156Ozq7tsRfhk
-    dns_api_token: 7dZbonk5j5nDAq51Wd7nAuDF4rJl3FTQ_xYIrrKx
+type: multi
+config:
+  - type: cloudflare
+    domain: example.com
+    config:
+      ttl: 150
+      zoneid: Zpe7L9jRCkag6PuNC6b5a17gMtf156Ozq7tsRfhk
+      authtoken: 7dZbonk5j5nDAq51Wd7nAuDF4rJl3FTQ_xYIrrKx
+  - type: cloudflare
+    domain: sub.example.com
+    config:
+      ttl: 150
+      zoneid: Zpe7L9jRCkag6PuNC6b5a17gMtf156Ozq7tsRfhk
+      authtoken: 7dZbonk5j5nDAq51Wd7nAuDF4rJl3FTQ_xYIrrKx
 `
 
 func main() {
@@ -24,16 +32,16 @@ func main() {
 
 	dec := yaml.NewDecoder(buf)
 
-	dnstype := providers.DNSProviderName("multi")
+	var config acmeservice.ProviderConfig
 
-	p, err := dnstype.Load(dec)
+	if err := dec.Decode(&config); err != nil {
+		log.Fatal(err)
+	}
+
+	p, err := config.Load(".")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	y := p.(*multi.MultiProvider)
-	for k, v := range y.Providers {
-		fmt.Printf("%s: %+v\n", k, v)
-	}
-
+	fmt.Printf("%+v\n", p)
 }

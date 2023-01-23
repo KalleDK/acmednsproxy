@@ -1,0 +1,8 @@
+---
+authenticator:
+  type: simpleauth
+  config:
+    path: auth.yaml
+provider:
+  type: multi
+  config: []
