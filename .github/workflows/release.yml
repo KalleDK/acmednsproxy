@@ -58,6 +58,8 @@ jobs:
             ./dist/*.deb
           if-no-files-found: error
       - name: Upload Deb
+        env:
+          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
         run: |
           set -ex
           sudo gem install package_cloud
