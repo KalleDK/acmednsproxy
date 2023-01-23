@@ -57,4 +57,9 @@ jobs:
             ./dist/*.apk
             ./dist/*.deb
           if-no-files-found: error
+      - name: Upload Deb
+        run: |
+          set -ex
+          sudo gem install package_cloud
+          package_cloud push KalleDK/debian/debian/bullseye ./dist/acmednsproxy-tools*.deb
           
