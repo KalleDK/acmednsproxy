@@ -110,6 +110,9 @@ nfpms:
     homepage: https://github.com/KalleDK/acmednsproxy
     formats:
       - deb
+    contents:
+      - src: ./examples/*
+        dst: /usr/share/doc/{{ .ProjectName }}/examples/ 
   - id: main-systemd-deb
     package_name: acmednsproxy-systemd
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
@@ -126,8 +129,6 @@ nfpms:
       - src: ./config/*
         dst: /etc/{{ .ProjectName }}/
         type: config|noreplace
-      - src: ./examples/*
-        dst: /usr/share/doc/{{ .ProjectName }}/examples/
       - src: ./distros/deb/{{ .ProjectName }}.service
         dst: /lib/systemd/system/{{ .ProjectName }}.service
       - src: ./distros/deb/{{ .ProjectName }}.default
@@ -150,6 +151,9 @@ nfpms:
     homepage: https://github.com/KalleDK/acmednsproxy
     formats:
       - apk
+    contents:
+      - src: ./examples/*
+        dst: /usr/share/doc/{{ .ProjectName }}/examples/
     apk:
       signature:
         key_file: "{{ .Env.ABUILD_KEY_NAME }}.rsa"
