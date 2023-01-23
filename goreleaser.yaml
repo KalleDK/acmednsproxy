@@ -5,7 +5,6 @@
 project_name: acmednsproxy
 env:
     - ABUILD_KEY_NAME={{ if index .Env "ABUILD_KEY_NAME"  }}{{ .Env.ABUILD_KEY_NAME }}{{ else }}apk{{ end }}
-
 before:
   hooks:
     - go mod tidy
@@ -179,8 +178,6 @@ nfpms:
       - src: ./config/*
         dst: /etc/{{ .ProjectName }}/
         type: config|noreplace
-      - src: ./examples/*
-        dst: /usr/share/doc/{{ .ProjectName }}/examples/
       - src: ./distros/apk/{{ .ProjectName }}.initd
         dst: /etc/init.d/{{ .ProjectName }}
       - src: ./distros/apk/{{ .ProjectName }}.confd

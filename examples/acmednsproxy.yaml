@@ -2,7 +2,7 @@
 authenticator:
   type: simpleauth
   config:
-    path: /etc/acmednsproxy/auth.yml
+    path: /etc/acmednsproxy/auth.yaml
 provider:
   type: multi
   config:
