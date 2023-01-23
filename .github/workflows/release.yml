@@ -63,5 +63,7 @@ jobs:
         run: |
           set -ex
           sudo gem install package_cloud
-          package_cloud push KalleDK/debian/debian/bullseye ./dist/acmednsproxy-tools*.deb
+          package_cloud push KalleDK/debian/debian/bullseye ./dist/acmednsproxy_*.deb
+          package_cloud push KalleDK/debian/debian/bullseye ./dist/acmednsproxy-systemd_*.deb
+          package_cloud push KalleDK/debian/debian/bullseye ./dist/acmednsproxy-tools_*.deb
           
