@@ -31,6 +31,21 @@ jobs:
           args: release --config goreleaser.yaml --rm-dist --snapshot
         env:
           ABUILD_KEY_NAME: ${{ secrets.ABUILD_KEY_NAME }}
+      - name: Install APK key
+        run: |
+          set -ex
+          mkdir apks
+          cp dist/*.apk apks/
+      - uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.APK_SSH_KEY }}
+        with:
+          source-directory: 'apks'
+          destination-github-username: 'KalleDK'
+          destination-repository-name: 'apk'
+          user-email: apk@k-moeller.dk
+          target-branch: main
+          target-directory: x86_64/acmednsproxy
       - uses: KalleDK/actions-apkrepo@v0.0.12
         id: build_apkrepo
         with:
