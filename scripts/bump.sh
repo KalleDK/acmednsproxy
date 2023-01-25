@@ -28,3 +28,4 @@ case $1 in
 esac
 echo "To: v${major}.${minor}.${patch}"
 git tag -a "v${major}.${minor}.${patch}" -m "v${major}.${minor}.${patch}"
+git push --follow-tags
