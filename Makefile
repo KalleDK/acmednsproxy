@@ -15,8 +15,8 @@ clean:
 	rm -f goreleaser.yaml
 	rm -f goreleaser-small.yaml
 
-.PHONY: bump
+.PHONY: patch
 bump:
 	[ "${DIRTY}" = "" ]
-	echo h
+	./scripts/bump.sh patch
 	
