@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
            go-version-file: 'go.mod'
-      - name: Install musl-tools
+      - name: Install Tools
         run: |
           set -ex
           sudo apt-get update -y -q
@@ -25,27 +25,11 @@ jobs:
         with:
           distribution: goreleaser
           version: latest
-          args: release --config goreleaser.yaml --rm-dist --snapshot
-      - name: Move apks
-        run: |
-          set -ex
-          mkdir apks
-          cp dist/*.apk apks/
-      - name: Push to apk repo
-        uses: cpina/github-action-push-to-another-repository@main
-        env:
-          SSH_DEPLOY_KEY: ${{ secrets.APK_SSH_KEY }}
-        with:
-          source-directory: 'apks'
-          destination-github-username: 'KalleDK'
-          destination-repository-name: 'apk'
-          user-email: apk@k-moeller.dk
-          target-branch: main
-          target-directory: x86_64/acmednsproxy
+          args: release --config goreleaser-small.yaml --rm-dist --snapshot
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: acmednsproxy-archive
+          name: 'acmednsproxy-archive'
           path: |
             ./dist/*.zip
             ./dist/*.tar.gz
