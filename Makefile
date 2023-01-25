@@ -1,3 +1,5 @@
+DIRTY := $(shell git diff --stat)
+
 .PHONY: all
 all: goreleaser.yaml goreleaser-small.yaml
 
@@ -15,5 +17,5 @@ clean:
 
 .PHONY: bump
 bump:
-	[ "`git diff --stat`" = "" ] || false
+	[ "${DIRTY}" = "" ] || false
 	
