@@ -18,19 +18,19 @@ jobs:
           set -ex
           sudo apt-get update -y -q
           sudo apt-get install -y -q musl-dev
-      - name: Install APK key
-        run: |
-          set -ex
-          printf -- '${{ secrets.ABUILD_KEY }}' > ${{ secrets.ABUILD_KEY_NAME }}.rsa
-          printf -- '${{ secrets.ABUILD_KEY_PUB }}' > ${{ secrets.ABUILD_KEY_NAME }}.rsa.pub
+          pip install jinja2-cli[yaml]
+          make
       - name: Build packages
         uses: goreleaser/goreleaser-action@v3
         with:
           distribution: goreleaser
           version: latest
           args: release --config goreleaser.yaml --rm-dist --snapshot
-        env:
-          ABUILD_KEY_NAME: ${{ secrets.ABUILD_KEY_NAME }}
+      - name: Move apks
+        run: |
+          set -ex
+          mkdir apks
+          cp dist/*.apk apks/
       - name: Push to apk repo
         uses: cpina/github-action-push-to-another-repository@main
         env:
