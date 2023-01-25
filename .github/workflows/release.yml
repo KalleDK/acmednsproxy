@@ -58,6 +58,7 @@ jobs:
           do
             package_cloud push KalleDK/debian/debian/bullseye $pkg
           done
+          package_cloud push KalleDK/debian ./dist/acmednsproxy_*.apk
   upload-apk:
     name: Upload Apk
     needs: build
