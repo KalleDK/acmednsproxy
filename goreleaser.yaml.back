@@ -1,0 +1,206 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+#
+# Make sure to check the documentation at https://goreleaser.com
+#
+project_name: acmednsproxy
+env:
+    - ABUILD_KEY_NAME={{ if index .Env "ABUILD_KEY_NAME"  }}{{ .Env.ABUILD_KEY_NAME }}{{ else }}apk{{ end }}
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - id: main-glibc-build
+    goos:
+      - linux
+      - windows
+      - freebsd
+    goarch:
+      - amd64
+    ldflags:
+      - -s -w
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goos={{.Runtime.Goos}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goarch={{.Runtime.Goarch}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Version={{.Version}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Binary={{.Binary}}
+    main: ./cmd/acmednsproxy
+  - id: main-musl-build
+    env:
+      - CC=x86_64-linux-musl-gcc
+    goos:
+      - linux
+    goarch:
+      - amd64
+    ldflags:
+      - -s -w
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goos={{.Runtime.Goos}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goarch={{.Runtime.Goarch}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Version={{.Version}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Binary={{.Binary}}
+    main: ./cmd/acmednsproxy
+  - id: tool-glibc-build
+    goos:
+      - linux
+      - windows
+      - freebsd
+    goarch:
+      - amd64
+    ldflags:
+      - -s -w
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goos={{.Runtime.Goos}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goarch={{.Runtime.Goarch}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Version={{.Version}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Binary={{.Binary}}
+    main: ./cmd/adpcrypt
+    binary: adpcrypt
+  - id: tool-musl-build
+    env:
+      - CC=x86_64-linux-musl-gcc
+    goos:
+      - linux
+    goarch:
+      - amd64
+    ldflags:
+      - -s -w
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goos={{.Runtime.Goos}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goarch={{.Runtime.Goarch}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Version={{.Version}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Binary={{.Binary}}
+    main: ./cmd/adpcrypt
+    binary: adpcrypt
+archives:
+  - id: glibc-archive
+    name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    builds:
+      - main-glibc-build
+    format_overrides:
+      - goos: windows
+        format: zip
+  - id: glibc-tools-archive
+    name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    builds:
+      - tool-glibc-build
+    format_overrides:
+      - goos: windows
+        format: zip
+  - id: musl-archive
+    builds:
+      - main-musl-build
+    name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}_musl"
+    format_overrides:
+      - goos: windows
+        format: zip
+  - id: musl-tools-archive
+    builds:
+      - tool-musl-build
+    name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}_musl"
+    format_overrides:
+      - goos: windows
+        format: zip
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Version }}next"
+nfpms:
+  - id: main-deb
+    builds:
+      - main-glibc-build
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    license: MIT
+    homepage: https://github.com/KalleDK/acmednsproxy
+    formats:
+      - deb
+    contents:
+      - src: ./examples/*
+        dst: /usr/share/doc/{{ .ProjectName }}/examples/ 
+  - id: main-systemd-deb
+    package_name: acmednsproxy-systemd
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    license: MIT
+    homepage: https://github.com/KalleDK/acmednsproxy
+    meta: true
+    formats:
+      - deb
+    dependencies:
+      - acmednsproxy
+    scripts:
+      preinstall: "distros/deb/preinstall.sh"
+    contents:
+      - src: ./config/*
+        dst: /etc/{{ .ProjectName }}/
+        type: config|noreplace
+      - src: ./distros/deb/{{ .ProjectName }}.service
+        dst: /lib/systemd/system/{{ .ProjectName }}.service
+      - src: ./distros/deb/{{ .ProjectName }}.default
+        dst: /etc/default/{{ .ProjectName }}
+  - id: tool-deb
+    package_name: acmednsproxy-tools
+    builds:
+      - tool-glibc-build
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    homepage: https://github.com/KalleDK/acmednsproxy
+    license: MIT
+    formats:
+      - deb
+  - id: main-apk
+    builds:
+      - main-musl-build
+    file_name_template: "{{ .PackageName }}-{{ .Version }}"
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    license: MIT
+    homepage: https://github.com/KalleDK/acmednsproxy
+    formats:
+      - apk
+    contents:
+      - src: ./examples/*
+        dst: /usr/share/doc/{{ .ProjectName }}/examples/
+    apk:
+      signature:
+        key_file: "{{ .Env.ABUILD_KEY_NAME }}.rsa"
+        key_name: "alpine@k-moeller.dk-62068d1b"
+  - id: main-openrc-apk
+    package_name: acmednsproxy-openrc
+    file_name_template: "{{ .PackageName }}-{{ .Version }}"
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    meta: true
+    license: MIT
+    homepage: https://github.com/KalleDK/acmednsproxy
+    formats:
+      - apk
+    dependencies:
+      - acmednsproxy
+    apk:
+      signature:
+        key_file: "{{ .Env.ABUILD_KEY_NAME }}.rsa"
+        key_name: "alpine@k-moeller.dk-62068d1b"
+    scripts:
+      preinstall: "distros/apk/preinstall.sh"
+    contents:
+      - src: ./config/*
+        dst: /etc/{{ .ProjectName }}/
+        type: config|noreplace
+      - src: ./distros/apk/{{ .ProjectName }}.initd
+        dst: /etc/init.d/{{ .ProjectName }}
+      - src: ./distros/apk/{{ .ProjectName }}.confd
+        dst: /etc/conf.d/{{ .ProjectName }}
+  - id: tool-apk
+    package_name: acmednsproxy-tools
+    file_name_template: "{{ .PackageName }}-{{ .Version }}"
+    builds:
+      - tool-musl-build
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    homepage: https://github.com/KalleDK/acmednsproxy
+    license: MIT
+    formats:
+      - apk
+    apk:
+      signature:
+        key_file: "{{ .Env.ABUILD_KEY_NAME }}.rsa"
+        key_name: "alpine@k-moeller.dk-62068d1b"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+release:
+  draft: true

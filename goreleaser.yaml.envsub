@@ -1,4 +1,4 @@
-# yaml-language-server: =https://goreleaser.com/static/schema.json
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 #
 # Make sure to check the documentation at https://goreleaser.com
 #
@@ -6,11 +6,11 @@ project_name: acmednsproxy
 builds:
   - id: main
     env:
-      - CC=gcc
+      - CC=${GOCC}
     goos:
-      - linux
+      - $GOOS
     goarch:
-      - amd64
+      - $GOARCH
     ldflags:
       - -s -w
       - -X {{.ModulePath}}/{{.ProjectName}}.Goos={{.Runtime.Goos}}
@@ -20,11 +20,11 @@ builds:
     main: ./cmd/acmednsproxy
   - id: tool
     env:
-      - CC=gcc
+      - CC=${GOCC}
     goos:
-      - linux
+      - $GOOS
     goarch:
-      - amd64
+      - $GOARCH
     ldflags:
       - -s -w
       - -X {{.ModulePath}}/{{.ProjectName}}.Goos={{.Runtime.Goos}}
