@@ -17,5 +17,6 @@ clean:
 
 .PHONY: bump
 bump:
-	[ "${DIRTY}" = "" ] || false
+	[ "${DIRTY}" = "" ]
+	echo h
 	
