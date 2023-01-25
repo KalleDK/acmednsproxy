@@ -16,6 +16,8 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
@@ -27,7 +29,7 @@ var delFlags = &struct {
 
 // delCmd represents the del command
 var delCmd = &cobra.Command{
-	Use:                   "del -d domain -u user [-a file]",
+	Use:                   "del [-d domain] [-u user] [-a file]",
 	Short:                 "Remove user from domain",
 	Args:                  cobra.NoArgs,
 	DisableFlagsInUseLine: true,
@@ -38,6 +40,16 @@ var delCmd = &cobra.Command{
 		s, err := loadAuthFile(flags.AuthFile)
 		if err != nil {
 			return err
+		}
+
+		for flags.Domain == "" {
+			fmt.Print("Enter Domain: ")
+			fmt.Scanln(&flags.Domain)
+		}
+
+		for flags.User == "" {
+			fmt.Print("Enter Username: ")
+			fmt.Scanln(&flags.User)
 		}
 
 		if err := s.RemovePermission(flags.User, flags.Domain); err != nil {
@@ -60,14 +72,12 @@ func init() {
 
 	flagname := "domain"
 	cmd.Flags().StringVarP(&flags.Domain, flagname, "d", "", "domain")
-	cmd.MarkFlagRequired(flagname)
 	cmd.RegisterFlagCompletionFunc(flagname, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	flagname = "user"
 	cmd.Flags().StringVarP(&flags.User, flagname, "u", "", "username")
-	cmd.MarkFlagRequired(flagname)
 	cmd.RegisterFlagCompletionFunc(flagname, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	})

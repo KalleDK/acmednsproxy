@@ -37,7 +37,7 @@ var addFlags = &struct {
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
-	Use:                   "add -d domain -u user [-a file] [-k]",
+	Use:                   "add [-d domain] [-u user] [-a file] [-k]",
 	Short:                 "Add user to domain",
 	Args:                  cobra.NoArgs,
 	DisableFlagsInUseLine: true,
@@ -53,6 +53,16 @@ var addCmd = &cobra.Command{
 		passFunc := generatePassword
 		if flags.AskPass {
 			passFunc = getPassword
+		}
+
+		for flags.Domain == "" {
+			fmt.Print("Enter Domain: ")
+			fmt.Scanln(&flags.Domain)
+		}
+
+		for flags.User == "" {
+			fmt.Print("Enter Username: ")
+			fmt.Scanln(&flags.User)
 		}
 
 		password, err := passFunc()
@@ -82,14 +92,12 @@ func init() {
 
 	flagname := "domain"
 	cmd.Flags().StringVarP(&flags.Domain, flagname, "d", "", "domain")
-	cmd.MarkFlagRequired(flagname)
 	cmd.RegisterFlagCompletionFunc(flagname, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	flagname = "user"
 	cmd.Flags().StringVarP(&flags.User, flagname, "u", "", "username")
-	cmd.MarkFlagRequired(flagname)
 	cmd.RegisterFlagCompletionFunc(flagname, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	})

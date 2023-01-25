@@ -1,4 +1,5 @@
 ---
+port: 8080
 authenticator:
   type: simpleauth
   config:

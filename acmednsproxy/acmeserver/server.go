@@ -17,6 +17,17 @@ type TLSSettings struct {
 	KeyFile  string
 }
 
+func Server(server *acmeservice.DNSProxy, addr string) (*http.Server, error) {
+	handler, err := NewHandler(server)
+	if err != nil {
+		return nil, err
+	}
+	return &http.Server{
+		Addr:    addr,
+		Handler: handler,
+	}, nil
+}
+
 func Serve(server *acmeservice.DNSProxy, settings Settings) {
 	handler, err := NewHandler(server)
 	if err != nil {

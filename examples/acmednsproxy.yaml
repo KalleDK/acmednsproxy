@@ -1,8 +1,9 @@
 ---
+listenaddr: ":8080"
 authenticator:
   type: simpleauth
   config:
-    path: /etc/acmednsproxy/auth.yaml
+    path: auth.yaml
 provider:
   type: multi
   config:

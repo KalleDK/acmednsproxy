@@ -17,6 +17,9 @@ func (r *RawYAML) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 type Config struct {
+	Port          string
+	Certificate   string
+	Key           string
 	Authenticator AuthConfig
 	Provider      ProviderConfig
 }

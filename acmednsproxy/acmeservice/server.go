@@ -14,54 +14,32 @@ type DNSProxy struct {
 	Provider     providers.DNSProvider
 }
 
-func (s *DNSProxy) reloadAuth(config AuthConfig, config_dir string) (err error) {
-	p, err := config.Load(config_dir)
+func (s *DNSProxy) Reload() (err error) {
+	config, config_dir, err := s.ConfigLoader.Load()
+	if err != nil {
+		return err
+	}
+
+	a, err := config.Authenticator.Load(config_dir)
+	if err != nil {
+		return err
+	}
+
+	p, err := config.Provider.Load(config_dir)
 	if err != nil {
 		return err
 	}
 
 	if s.Auth != nil {
-		if err := s.Auth.Close(); err != nil {
-			return err
-		}
-	}
-
-	s.Auth = p
-
-	return nil
-}
-
-func (s *DNSProxy) reloadProvider(config ProviderConfig, config_dir string) (err error) {
-	p, err := config.Load(config_dir)
-	if err != nil {
-		return err
+		s.Auth.Close()
 	}
 
 	if s.Provider != nil {
-		if err := s.Provider.Close(); err != nil {
-			return err
-		}
+		s.Provider.Close()
 	}
 
 	s.Provider = p
-
-	return nil
-}
-
-func (s *DNSProxy) Reload() (err error) {
-	config, config_dir, err := s.ConfigLoader.Load()
-	fmt.Printf("%+v\n", config)
-	if err != nil {
-		return err
-	}
-
-	if err := s.reloadProvider(config.Provider, config_dir); err != nil {
-		return err
-	}
-
-	if err := s.reloadAuth(config.Authenticator, config_dir); err != nil {
-		return err
-	}
+	s.Auth = a
 
 	return nil
 }

@@ -9,4 +9,6 @@ RUN true \
 
 VOLUME ["/etc/acmednsproxy"]
 
-CMD ["acmednsproxy", ""]
+CMD ["acmednsproxy", "serve", "-c", "/etc/acmednsproxy/acmednsproxy.yaml"]
+
+EXPOSE 8080

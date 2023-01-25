@@ -3,7 +3,6 @@ module github.com/KalleDK/acmednsproxy
 go 1.18
 
 require (
-	github.com/KalleDK/go-fpr v0.0.0-20221228133826-5f7daff04738
 	github.com/adrg/xdg v0.4.0
 	github.com/cloudflare/cloudflare-go v0.57.1
 	github.com/gin-gonic/gin v1.8.2

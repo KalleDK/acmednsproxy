@@ -31,15 +31,30 @@ var verifyFlags = &struct {
 
 // verifyCmd represents the verify command
 var verifyCmd = &cobra.Command{
-	Use:                   "verify -d domain -u username {-k | -p password} [-a file]",
+	Use:                   "verify [-d domain] [-u user] {-k | -p password} [-a file]",
 	Short:                 "Verify username and password agains domain",
 	Args:                  cobra.NoArgs,
 	DisableFlagsInUseLine: true,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		flags := verifyFlags
 
+		s, err := loadAuthFile(flags.AuthFile)
+		if err != nil {
+			return err
+		}
+
 		if flags.Password == "" && !flags.AskPass {
 			return fmt.Errorf("either give password with arg or use -p")
+		}
+
+		for flags.Domain == "" {
+			fmt.Print("Enter Domain: ")
+			fmt.Scanln(&flags.Domain)
+		}
+
+		for flags.User == "" {
+			fmt.Print("Enter Username: ")
+			fmt.Scanln(&flags.User)
 		}
 
 		if flags.AskPass {
@@ -47,11 +62,6 @@ var verifyCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-		}
-
-		s, err := loadAuthFile(flags.AuthFile)
-		if err != nil {
-			return err
 		}
 
 		if err := s.VerifyPermissions(flags.User, flags.Password, flags.Domain); err != nil {
@@ -70,14 +80,12 @@ func init() {
 
 	flagname := "domain"
 	cmd.Flags().StringVarP(&flags.Domain, flagname, "d", "", "domain")
-	cmd.MarkFlagRequired(flagname)
 	cmd.RegisterFlagCompletionFunc(flagname, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	flagname = "user"
 	cmd.Flags().StringVarP(&flags.User, flagname, "u", "", "username")
-	cmd.MarkFlagRequired(flagname)
 	cmd.RegisterFlagCompletionFunc(flagname, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	})

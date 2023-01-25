@@ -11,7 +11,7 @@ before:
 builds:
   - id: main-glibc-build
     goos:
-      - linux
+      - $GOOS
       - windows
       - freebsd
     goarch:
