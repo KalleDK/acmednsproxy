@@ -3,6 +3,9 @@
 %:
 	dh $@ --with sysuser
 
-override_dh_auto_clean:
+override_dh_auto_build:
+	dh_auto_build
 	chmod -R +w debian/.debhelper || true
+
+override_dh_auto_clean:
 	dh_auto_clean 

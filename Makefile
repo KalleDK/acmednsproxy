@@ -5,8 +5,12 @@ DIRTY := $(shell git diff --stat)
 all: build
 
 .PHONY: build
-build: goreleaser-deb.yaml
-	goreleaser build --config goreleaser-deb.yaml --rm-dist --snapshot
+build: goreleaser-small.yaml
+	goreleaser build --config goreleaser.yaml --rm-dist --snapshot
+
+.PHONY: build
+full: goreleaser.yaml
+	goreleaser build --config goreleaser.yaml --rm-dist --snapshot
 
 goreleaser.yaml: goreleaser/goreleaser.yaml.j2 goreleaser/full.yaml
 	jinja2 goreleaser/goreleaser.yaml.j2 goreleaser/full.yaml > goreleaser.yaml
