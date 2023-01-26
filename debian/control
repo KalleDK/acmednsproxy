@@ -1,0 +1,16 @@
+Source: acmednsproxy
+Section: devel
+Priority: optional
+Maintainer: Kalle M. Aagaard <deb@k-moeller.dk>
+Build-Depends: build-essential, debhelper (>= 11), dh-sysuser
+
+Package: acmednsproxy
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Proxy for _acme-challenge requests
+  Can create and remove individual domains
+
+Package: acmednsproxy-tools
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Tools to help manage acmednsproxy
