@@ -1,0 +1,94 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+#
+# Make sure to check the documentation at https://goreleaser.com
+#
+project_name: acmednsproxy
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - id: main-linux-amd64-glibc
+    goos: [linux]
+    goarch: [amd64]
+    ldflags:
+      - -s -w
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goos={{.Runtime.Goos}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goarch={{.Runtime.Goarch}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Version={{.Version}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Binary={{.Binary}}
+    main: ./cmd/acmednsproxy
+  - id: tool-linux-amd64-glibc
+    goos: [linux]
+    goarch: [amd64]
+    ldflags:
+      - -s -w
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goos={{.Runtime.Goos}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goarch={{.Runtime.Goarch}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Version={{.Version}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Binary={{.Binary}}
+    main: ./cmd/adpcrypt
+    binary: adpcrypt
+archives:
+  - id: main-linux-amd64-glibc
+    name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}_glibc"
+    builds: [main-linux-amd64-glibc]
+    format_overrides:
+      - goos: windows
+        format: zip
+  - id: tool-linux-amd64-glibc
+    name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}_glibc"
+    builds: [tool-linux-amd64-glibc]
+    format_overrides:
+      - goos: windows
+        format: zip
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Version }}-next"
+nfpms:
+  - id: main-deb
+    package_name: acmednsproxy
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    license: MIT
+    homepage: https://github.com/KalleDK/acmednsproxy
+    contents:
+      - src: ./examples/*
+        dst: /usr/share/doc/{{ .ProjectName }}/examples/
+    builds:
+      - main-linux-amd64-glibc
+    formats: [deb]
+  - id: tool-deb
+    package_name: acmednsproxy-tools
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    license: MIT
+    homepage: https://github.com/KalleDK/acmednsproxy
+    builds:
+      - tool-linux-amd64-glibc
+    formats: [deb]
+  - id: main-systemd-deb
+    package_name: acmednsproxy-systemd
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    license: MIT
+    homepage: https://github.com/KalleDK/acmednsproxy
+    meta: true
+    formats: [deb]
+    dependencies:
+      - acmednsproxy
+    scripts:
+      preinstall: "distros/deb/preinstall.sh"
+    contents:
+      - src: ./config/*
+        dst: /etc/{{ .ProjectName }}/
+        type: config|noreplace
+      - src: ./distros/deb/{{ .ProjectName }}.service
+        dst: /lib/systemd/system/{{ .ProjectName }}.service
+      - src: ./distros/deb/{{ .ProjectName }}.default
+        dst: /etc/default/{{ .ProjectName }}
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+release:
+  draft: true

@@ -2,3 +2,7 @@
 
 %:
 	dh $@ --with sysuser
+
+override_dh_auto_clean:
+	chmod -R +w debian/.debhelper
+	dh_auto_clean 
