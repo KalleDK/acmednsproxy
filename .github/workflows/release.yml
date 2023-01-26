@@ -56,7 +56,7 @@ jobs:
           sudo gem install package_cloud
           for pkg in $(find ./dist -name '*.deb')
           do
-            package_cloud push KalleDK/debian/debian/bullseye $pkg
+            package_cloud push KalleDK/debian/any/any $pkg
           done
   upload-apk:
     name: Upload Apk
