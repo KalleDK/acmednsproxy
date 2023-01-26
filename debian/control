@@ -2,7 +2,7 @@ Source: acmednsproxy
 Section: devel
 Priority: optional
 Maintainer: Kalle M. Aagaard <deb@k-moeller.dk>
-Build-Depends: build-essential, debhelper (>= 11), dh-sysuser
+Build-Depends: build-essential, debhelper (>= 13), debhelper-compat (= 13), dh-sysuser
 
 Package: acmednsproxy
 Architecture: any
