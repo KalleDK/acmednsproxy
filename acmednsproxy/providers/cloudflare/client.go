@@ -20,7 +20,7 @@ type APIConfig struct {
 
 type apiClient struct {
 	clientEdit *cloudflare.API // needs Zone/DNS/Edit permissions
-	zoneID     string
+	zoneID     *cloudflare.ResourceContainer
 	TTL        int
 }
 
@@ -38,12 +38,12 @@ func newAPIClient(config *APIConfig) (*apiClient, error) {
 	return &apiClient{
 		clientEdit: dns,
 		TTL:        config.TTL,
-		zoneID:     config.ZoneID,
+		zoneID:     cloudflare.ZoneIdentifier(config.ZoneID),
 	}, nil
 }
 
 func (m *apiClient) CreateDNSRecord(fqdn, value string) (string, error) {
-	dnsRecord := cloudflare.DNSRecord{
+	dnsRecord := cloudflare.CreateDNSRecordParams{
 		Type:    "TXT",
 		Name:    dns01.UnFqdn(fqdn),
 		Content: value,

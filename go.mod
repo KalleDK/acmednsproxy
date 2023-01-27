@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/adrg/xdg v0.4.0
-	github.com/cloudflare/cloudflare-go v0.57.1
+	github.com/cloudflare/cloudflare-go v0.59.0
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-acme/lego/v4 v4.9.1
 	github.com/sethvargo/go-password v0.2.0
@@ -13,6 +13,10 @@ require (
 	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
 	golang.org/x/term v0.3.0
 	gopkg.in/yaml.v3 v3.0.1
+)
+
+replace (
+	github.com/cloudflare/cloudflare-go v0.59.0 => ./vendors/github.com/cloudflare/cloudflare-go@v0.59.0
 )
 
 require (
@@ -25,7 +29,7 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.1 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.2 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
