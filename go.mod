@@ -16,7 +16,7 @@ require (
 )
 
 replace (
-	github.com/cloudflare/cloudflare-go v0.59.0 => ./vendors/github.com/cloudflare/cloudflare-go@v0.59.0
+	github.com/cloudflare/cloudflare-go v0.59.0 => ./vendors/github.com/cloudflare/cloudflare-go
 )
 
 require (
