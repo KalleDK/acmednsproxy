@@ -6,11 +6,11 @@ all: build
 
 .PHONY: build
 build: goreleaser-deb.yaml
-	goreleaser build --config goreleaser-deb.yaml --rm-dist --snapshot
+	goreleaser build --config goreleaser-deb.yaml --clean --snapshot
 
 .PHONY: full
 full: goreleaser.yaml
-	goreleaser build --config goreleaser.yaml --rm-dist --snapshot
+	goreleaser build --config goreleaser.yaml --clean --snapshot
 
 goreleaser.yaml: goreleaser/goreleaser.yaml.j2 goreleaser/full.yaml
 	jinja2 goreleaser/goreleaser.yaml.j2 goreleaser/full.yaml > goreleaser.yaml
