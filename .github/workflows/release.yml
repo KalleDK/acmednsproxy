@@ -72,7 +72,7 @@ jobs:
         run: |
           set -ex
           mkdir apks
-          cp dist/*.apk apks/
+          for x in dist/*.apk; do cp $x $(echo $x | sed s/_linux_amd64// | sed s/^dist/apks/); done
       - name: Push to apk repo
         uses: cpina/github-action-push-to-another-repository@main
         env:
