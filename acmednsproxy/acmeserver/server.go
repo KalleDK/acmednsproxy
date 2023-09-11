@@ -27,7 +27,7 @@ func loadAuthFile(authFile string) (a auth.SimpleUserAuthenticator, err error) {
 	return a, nil
 }
 
-func loadproviderFile(providerFile string) (p providers.ProviderSolved, err error) {
+func loadproviderFile(providerFile string) (p providers.DNSProvider, err error) {
 	data, err := os.ReadFile(providerFile)
 	if err != nil {
 		return
@@ -47,7 +47,7 @@ type Server struct {
 	CertFile     string
 	KeyFile      string
 	Auth         auth.SimpleUserAuthenticator
-	Provider     providers.ProviderSolved
+	Provider     providers.DNSProvider
 }
 
 func (s *Server) Serve() {

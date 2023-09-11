@@ -9,10 +9,10 @@ import (
 )
 
 type MultiProvider struct {
-	providers map[string]providers.ProviderSolved
+	providers map[string]providers.DNSProvider
 }
 
-func (mp *MultiProvider) getProvider(domain string) (p providers.ProviderSolved, err error) {
+func (mp *MultiProvider) getProvider(domain string) (p providers.DNSProvider, err error) {
 	domain_parts := strings.Split(domain, ".")
 	for len(domain_parts) > 0 {
 		domain_stub := strings.Join(domain_parts, ".")
@@ -53,7 +53,7 @@ func (mp *MultiProvider) CreateRecord(fqdn, value string) error {
 	return nil
 }
 
-func Load(d providers.ConfigDecoder) (providers.ProviderSolved, error) {
+func Load(d providers.YamlDecoder) (providers.DNSProvider, error) {
 	mp := &MultiProvider{}
 	if err := d.Decode(&mp.providers); err != nil {
 		return nil, err

@@ -20,7 +20,7 @@ type yamlentry struct {
 
 func (j YamlConfigDecoder) Decode(v interface{}) (err error) {
 
-	vp, ok := v.(*map[string]providers.ProviderSolved)
+	vp, ok := v.(*map[string]providers.DNSProvider)
 	if !ok {
 		return errors.New("invalid type")
 	}
@@ -31,7 +31,7 @@ func (j YamlConfigDecoder) Decode(v interface{}) (err error) {
 		return
 	}
 
-	pm := map[string]providers.ProviderSolved{}
+	pm := map[string]providers.DNSProvider{}
 
 	for _, entry := range entries {
 		provider, err := providers.Load(entry.Type, &entry.Config)

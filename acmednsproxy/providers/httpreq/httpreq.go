@@ -26,7 +26,7 @@ type CFConfig struct {
 	HTTP_TIMEOUT        *int
 }
 
-func Load(d providers.ConfigDecoder) (providers.ProviderSolved, error) {
+func Load(d providers.YamlDecoder) (providers.DNSProvider, error) {
 
 	var config CFConfig
 	if err := d.Decode(&config); err != nil {
