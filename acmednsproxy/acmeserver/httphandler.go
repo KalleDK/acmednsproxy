@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -93,6 +94,7 @@ func presentHandler(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		auth := c.MustGet("auth").(acmeservice.Auth)
 		record := c.MustGet("record").(acmeservice.Record)
+		log.Printf("%v\n", record)
 
 		if err := proxy.Authenticate(auth, record); err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
