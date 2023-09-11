@@ -1,0 +1,12 @@
+[Unit]
+Description=ACME DNS proxy
+After=network.target
+
+[Service]
+User=acmednsproxy
+EnvironmentFile=-/etc/default/acmednsproxy
+ExecStart=/usr/bin/acmednsproxy serve $ACMEDNSPROXY_OPTS
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
