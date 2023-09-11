@@ -59,7 +59,7 @@ nfpms:
   {%- if pkg_matrix|length > 0 %}
   - id: main-{{pkg}}
     package_name: acmednsproxy
-    name_template: {{"{{ .PackageName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"}}
+    name_template: "{{"{{ .PackageName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"}}"
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
     license: MIT
     homepage: https://github.com/KalleDK/acmednsproxy
@@ -73,7 +73,7 @@ nfpms:
     formats: [{{pkg}}]
   - id: tool-{{pkg}}
     package_name: acmednsproxy-tools
-    name_template: {{"{{ .PackageName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"}}
+    name_template: "{{"{{ .PackageName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"}}"
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
     license: MIT
     homepage: https://github.com/KalleDK/acmednsproxy
