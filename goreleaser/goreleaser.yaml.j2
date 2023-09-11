@@ -42,7 +42,7 @@ archives:
   {%- for buildid in ("main","tool") %}
   {%- for build in matrix %}
   - id: {{buildid}}-{{build.os}}-{{build.arch}}-{{build.libc}}
-    name_template: "{{"{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"}}_{{build.libc}}"
+    name_template: "{{"{{ .Binary }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"}}-{{build.libc}}"
     builds: [{{buildid}}-{{build.os}}-{{build.arch}}-{{build.libc}}]
     format_overrides:
       - goos: windows
