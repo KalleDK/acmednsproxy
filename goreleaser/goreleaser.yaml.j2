@@ -129,6 +129,8 @@ nfpms:
           group: acmednsproxy
       - src: ./distros/apk/{{ .ProjectName }}.initd
         dst: /etc/init.d/{{ .ProjectName }}
+        file_info:
+          mode: 0755
       - src: ./distros/apk/{{ .ProjectName }}.confd
         dst: /etc/conf.d/{{ .ProjectName }}
       - dst: /var/log/acmednsproxy
