@@ -127,6 +127,12 @@ nfpms:
         dst: /etc/init.d/{{ .ProjectName }}
       - src: ./distros/apk/{{ .ProjectName }}.confd
         dst: /etc/conf.d/{{ .ProjectName }}
+      - dst: /var/log/acmednsproxy
+        type: dir
+        file_info:
+          mode: 0755
+          owner: acmednsproxy
+          group: acmednsproxy
   {%- endraw %}
   {%- endif -%}
   {%- endif -%}
