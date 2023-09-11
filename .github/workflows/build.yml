@@ -19,12 +19,13 @@ jobs:
           sudo apt-get update -y -q
           sudo apt-get install -y -q musl-dev
           pip install jinja2-cli[yaml]
+          make goreleaser-small.yaml
       - name: Build packages
         uses: goreleaser/goreleaser-action@v3
         with:
           distribution: goreleaser
           version: latest
-          args: release --config goreleaser-small.yaml --rm-dist --snapshot
+          args: release --config goreleaser-small.yaml --clean --snapshot
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
