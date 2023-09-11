@@ -123,6 +123,10 @@ nfpms:
       - src: ./config/*
         dst: /etc/{{ .ProjectName }}/
         type: config|noreplace
+        file_info:
+          mode: 0640
+          owner: root
+          group: acmednsproxy
       - src: ./distros/apk/{{ .ProjectName }}.initd
         dst: /etc/init.d/{{ .ProjectName }}
       - src: ./distros/apk/{{ .ProjectName }}.confd
