@@ -2,6 +2,7 @@ package multi
 
 import (
 	"errors"
+	"log"
 	"strings"
 
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
@@ -41,12 +42,15 @@ func (mp *MultiProvider) RemoveRecord(fqdn, value string) error {
 
 func (mp *MultiProvider) CreateRecord(fqdn, value string) error {
 	domain := dns01.UnFqdn(fqdn)
+	log.Printf("%v", domain)
 	p, err := mp.getProvider(domain)
 	if err != nil {
+		log.Printf("%v", err)
 		return err
 	}
 
 	if err = p.CreateRecord(fqdn, value); err != nil {
+		log.Printf("%v", err)
 		return err
 	}
 
