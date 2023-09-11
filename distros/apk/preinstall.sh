@@ -21,3 +21,6 @@ if ! getent passwd acmednsproxy >/dev/null; then
       -D \
       acmednsproxy  >/dev/null
 fi
+
+mkdir -p /var/log/acmednsproxy
+chown acmednsproxy:acmednsproxy /var/log/acmednsproxy
