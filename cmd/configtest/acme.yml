@@ -3,7 +3,7 @@ port: 8080
 authenticator:
   type: simpleauth
   config:
-    path: auth.yml
+    path: cmd/configtest/auth.yml
 provider:
   type: multi
   config:

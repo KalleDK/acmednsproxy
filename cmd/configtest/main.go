@@ -34,7 +34,7 @@ func main() {
 	fmt.Println(dns01.GetRecord("sub.example.com", "token"))
 
 	fmt.Println(p.Authenticate(acmeservice.Auth{Username: "test", Password: "test"}, acmeservice.Record{FQDN: "_acme-challenge.sub.example.com.", Value: "PEaenWxYddN6Q_NT1PiOYfz4EsZu7jRXRlpAsNpBU-A"}))
-	fmt.Println(p.Authenticate(acmeservice.Auth{Username: "dsa", Password: "dsa"}, acmeservice.Record{FQDN: "examdple.com", Value: ""}))
+	fmt.Println(p.Authenticate(acmeservice.Auth{Username: "dsa", Password: "dsa"}, acmeservice.Record{FQDN: "example.com", Value: ""}))
 
 	fmt.Printf("%+v\n", p)
 }

@@ -1,3 +1,2 @@
 ACMEDNSPROXY_LOG_FILE=/var/log/acmednsproxy/proxy.log
-ACMEDNSPROXY_OPTS="-a /etc/acmednsproxy/auth.yaml -p /etc/acmednsproxy/providers.yaml"
-#ACMEDNSPROXY_OPTS="-a /etc/acmednsproxy/auth.yaml -p /etc/acmednsproxy/providers.yaml -c /etc/acmednsproxy/server.crt -k /etc/acmednsproxy/server.key"
+ACMEDNSPROXY_OPTS="-c /etc/acmednsproxy/acmednsproxy.yaml"
