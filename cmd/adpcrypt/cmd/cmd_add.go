@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -24,7 +25,13 @@ import (
 const output = `
 HTTPREQ_MODE=RAW \
 HTTPREQ_USERNAME=%s \
-HTTPREQ_PASSWORD=%s
+HTTPREQ_PASSWORD=%s \
+HTTPREQ_ENDPOINT=http://%s:8080
+
+HTTPREQ_MODE=RAW \
+HTTPREQ_USERNAME=%s \
+HTTPREQ_PASSWORD=%s \
+HTTPREQ_ENDPOINT=https://%s:9090
 
 `
 
@@ -78,7 +85,12 @@ var addCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf(output, flags.User, password)
+		hostname, err := os.Hostname()
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf(output, flags.User, password, hostname, flags.User, password, hostname)
 
 		return nil
 

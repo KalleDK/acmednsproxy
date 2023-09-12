@@ -20,6 +20,7 @@ type Config struct {
 	Port          string
 	Certificate   string
 	Key           string
+	Hostname      string
 	Authenticator AuthConfig
 	Provider      ProviderConfig
 }
