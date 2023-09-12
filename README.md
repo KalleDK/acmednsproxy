@@ -55,27 +55,32 @@ provider:
 sudo rc-update add acmednsproxy
 sudo rc-service acmednsproxy start
 sudo apk add lego
-sudo adpcrypt add -u ns01 -d $(hostname) -a /etc/acmednsproxy/auth.yaml
+sudo adpcrypt add -u ns01 -d $(hostname -f) -a /etc/acmednsproxy/auth.yaml
 
 sudo su -l
-lego --path=/var/lib/lego --email="acme@example.com" --domains="$(hostname)" --dns="httpreq" run
+lego --path=/var/lib/lego --email="acme@example.com" --domains="$(hostname -f)" --dns="httpreq" run
 
 cat /usr/sbin/on_certrenewal_acmednsproxy
 #############
 #!/usr/bin/env sh
 
-cp /var/lib/lego/certificates/$(hostname).key /etc/acmednsproxy/server.key
+cp /var/lib/lego/certificates/$(hostname -f).key /etc/acmednsproxy/server.key
 chown root:acmednsproxy /etc/acmednsproxy/server.key
 chmod g+r /etc/acmednsproxy/server.key
-cp /var/lib/lego/certificates/$(hostname).crt /etc/acmednsproxy/server.crt
+cp /var/lib/lego/certificates/$(hostname -f).crt /etc/acmednsproxy/server.crt
 chown root:acmednsproxy /etc/acmednsproxy/server.crt
 chmod g+r /etc/acmednsproxy/server.crt
 service acmednsproxy restart
 ###########
 
-cat /usr/sbin/certrenewal_acmednsproxy
+cat /etc/periodic/daily/001-updatecert.sh
+chmod +x /etc/periodic/daily/001-updatecert.sh
 #############
 #!/usr/bin/env sh
+
+set -e
+
+MAIL=acme@example.com
 
 export HTTPREQ_MODE=RAW
 export HTTPREQ_USERNAME=ns01
@@ -86,26 +91,34 @@ HTTPREQ_ENDPOINT=https://ns01.example.com:9090
 
 first=0
 testserver=""
+days=45
 
 
-while getopts "ftk" o; do
+while getopts "rtkf" o; do
     case "${o}" in
         k)
             HTTPREQ_ENDPOINT=http://ns01.example.com:8080
             ;;
-        f)
+        r)
             first="first"
             ;;
         t)
             testserver=" --server=https://acme-staging-v02.api.letsencrypt.org/directory "
             ;;
+        f)
+            days=90
+            ;;
     esac
 done
 export HTTPREQ_ENDPOINT
+echo $HTTPREQ_ENDPOINT
+wget -q -O - $HTTPREQ_ENDPOINT/ping
 if [ "first" = "$first" ]; then
-lego $testserver --path=/var/lib/lego --email="acme@example.com" --domains="$(hostname)" --dns="httpreq" run"
+echo lego $testserver --path=/var/lib/lego --email="$MAIL" --domains="$(hostname -f)" --dns="httpreq" run
+lego $testserver --path=/var/lib/lego --email="$MAIL" --domains="$(hostname -f)" --dns="httpreq" run
 else
-lego $testserver --path=/var/lib/lego --email="acme@example.com" --domains="$(hostname)" --dns="httpreq" renew --days=45 --renew-hook="/usr/sbin/on_certrenewal_acmednsproxy"
+echo lego $testserver --path=/var/lib/lego --email="$MAIL" --domains="$(hostname -f)" --dns="httpreq" renew --days=$days --renew-hook="/usr/sbin/on_certrenewal_acmednsproxy"
+lego $testserver --path=/var/lib/lego --email="$MAIL" --domains="$(hostname -f)" --dns="httpreq" renew --days=$days --renew-hook="/usr/sbin/on_certrenewal_acmednsproxy"
 fi;
 
 
