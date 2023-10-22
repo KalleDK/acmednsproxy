@@ -98,6 +98,7 @@ nfpms:
       - apk
   - id: systemd
     package_name: acmednsproxy-systemd
+    file_name_template: "{{ .ConventionalFileName }}"
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
     license: MIT
     homepage: https://github.com/KalleDK/acmednsproxy
@@ -117,7 +118,7 @@ nfpms:
         dst: /etc/default/{{ .ProjectName }}
   - id: openrc
     package_name: acmednsproxy-openrc
-    file_name_template: "{{ .PackageName }}-{{ .Version }}"
+    file_name_template: "{{ .ConventionalFileName }}"
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
     meta: true
     license: MIT
@@ -147,6 +148,7 @@ nfpms:
           mode: 0755
           owner: acmednsproxy
           group: acmednsproxy
+
 changelog:
   sort: asc
   filters:
