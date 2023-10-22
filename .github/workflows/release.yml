@@ -65,7 +65,7 @@ jobs:
         run: |
           set -ex
           mkdir -p pkgs/apk/x86_64/acmednsproxy
-          for x in dist/*_x86_64.apk; do cp $x pkgs/apk/x86_64/acmednsproxy/$(basename $x | sed s/_x86_64\.apk/.apk/); done
+          for x in dist/*_x86_64.apk; do cp $x pkgs/apk/x86_64/acmednsproxy/$(basename $x | sed s/_x86_64\.apk/.apk/ | sed s/_/-/ ); done
           mkdir -p pkgs/deb
           for x in dist/*.deb; do cp $x pkgs/deb/; done
       - name: Push to apk repo
