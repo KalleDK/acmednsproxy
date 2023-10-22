@@ -1,0 +1,157 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+#
+# Make sure to check the documentation at https://goreleaser.com
+#
+project_name: acmednsproxy
+
+before:
+  hooks:
+    - go mod tidy
+
+snapshot:
+  name_template: "{{ .Version }}-next"
+
+builds:
+  - id: service
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - freebsd
+    goarch:
+      - "386"
+      - amd64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goos={{.Runtime.Goos}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goarch={{.Runtime.Goarch}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Version={{.Version}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Binary={{.Binary}}
+    main: ./cmd/acmednsproxy
+    binary: acmednsproxy
+  - id: tool
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - freebsd
+    goarch:
+      - "386"
+      - amd64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goos={{.Runtime.Goos}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Goarch={{.Runtime.Goarch}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Version={{.Version}}
+      - -X {{.ModulePath}}/{{.ProjectName}}.Binary={{.Binary}}
+    main: ./cmd/adpcrypt
+    binary: adpcrypt
+
+archives:
+  - name_template: >-
+      {{- .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end -}}
+    format_overrides:
+      - goos: windows
+        format: zip
+    builds_info:
+      group: root
+      owner: root
+checksum:
+  name_template: 'checksums.txt'
+
+nfpms:
+  - id: service
+    package_name: acmednsproxy
+    file_name_template: "{{ .ConventionalFileName }}"
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    license: MIT
+    homepage: https://github.com/KalleDK/acmednsproxy
+    contents:
+      - src: ./examples/*
+        dst: /usr/share/doc/{{ .ProjectName }}/examples/
+    builds:
+      - service
+    formats:
+      - deb
+      - apk
+  - id: tool
+    package_name: acmednsproxy-tools
+    file_name_template: "{{ .ConventionalFileName }}"
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    license: MIT
+    homepage: https://github.com/KalleDK/acmednsproxy
+    builds:
+      - tool
+    formats:
+      - deb
+      - apk
+  - id: systemd
+    package_name: acmednsproxy-systemd
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    license: MIT
+    homepage: https://github.com/KalleDK/acmednsproxy
+    meta: true
+    formats: [deb]
+    dependencies:
+      - acmednsproxy
+    scripts:
+      preinstall: "distros/deb/preinstall.sh"
+    contents:
+      - src: ./config/*
+        dst: /etc/{{ .ProjectName }}/
+        type: config|noreplace
+      - src: ./distros/deb/{{ .ProjectName }}.service
+        dst: /lib/systemd/system/{{ .ProjectName }}.service
+      - src: ./distros/deb/{{ .ProjectName }}.default
+        dst: /etc/default/{{ .ProjectName }}
+  - id: openrc
+    package_name: acmednsproxy-openrc
+    file_name_template: "{{ .PackageName }}-{{ .Version }}"
+    maintainer: Kalle M. Aagaard <git@k-moeller.dk>
+    meta: true
+    license: MIT
+    homepage: https://github.com/KalleDK/acmednsproxy
+    formats: [apk]
+    dependencies:
+      - acmednsproxy
+    scripts:
+      preinstall: "distros/apk/preinstall.sh"
+    contents:
+      - src: ./config/*
+        dst: /etc/{{ .ProjectName }}/
+        type: config|noreplace
+        file_info:
+          mode: 0640
+          owner: root
+          group: acmednsproxy
+      - src: ./distros/apk/{{ .ProjectName }}.initd
+        dst: /etc/init.d/{{ .ProjectName }}
+        file_info:
+          mode: 0755
+      - src: ./distros/apk/{{ .ProjectName }}.confd
+        dst: /etc/conf.d/{{ .ProjectName }}
+      - dst: /var/log/acmednsproxy
+        type: dir
+        file_info:
+          mode: 0755
+          owner: acmednsproxy
+          group: acmednsproxy
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+release:
+  draft: true
