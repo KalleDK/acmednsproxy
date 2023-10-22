@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 git fetch --tags -q
-version=$(git tag -l --sort=-version:refname v* | head -n 1)
+version=$(git tag -l --sort=-version:refname 'v*' | head -n 1)
 echo "From: $version"
 a=( ${version//./ } )
 b=( ${a[0]//v/ } )
