@@ -67,7 +67,7 @@ jobs:
           mkdir -p pkgs/apk/x86_64/acmednsproxy
           for x in dist/*_x86_64.apk; do cp $x pkgs/apk/x86_64/acmednsproxy/$(basename $x | sed s/_x86_64\.apk/.apk/); done
           mkdir -p pkgs/deb
-          for x in dist/*.deb; do cp $x pkgs/deb/
+          for x in dist/*.deb; do cp $x pkgs/deb/; done
       - name: Push to apk repo
         uses: cpina/github-action-push-to-another-repository@main
         env:
