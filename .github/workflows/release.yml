@@ -71,7 +71,7 @@ jobs:
       - name: Push to apk repo
         uses: cpina/github-action-push-to-another-repository@main
         env:
-          SSH_DEPLOY_KEY: ${{ secrets.APK_SSH_KEY }}
+          SSH_DEPLOY_KEY: ${{ secrets.REGISTRY_SSH_KEY }}
         with:
           source-directory: 'pkgs'
           destination-github-username: 'KalleDK'
