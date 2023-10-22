@@ -75,7 +75,7 @@ jobs:
         with:
           source-directory: 'pkgs'
           destination-github-username: 'KalleDK'
-          destination-repository-name: 'apk'
+          destination-repository-name: 'registry'
           user-email: apk@k-moeller.dk
           target-branch: main
           target-directory: pkgs/acmednsproxy
