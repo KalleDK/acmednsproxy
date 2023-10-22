@@ -1,8 +1,0 @@
----
-matrix:
-- os: linux
-  arch: amd64
-  libc: musl
-  cc: x86_64-linux-musl-gcc
-  pkg:
-    apk:

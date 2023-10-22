@@ -1,7 +1,0 @@
----
-matrix:
-- os: linux
-  arch: amd64
-  libc: glibc
-  pkg:
-    deb:
