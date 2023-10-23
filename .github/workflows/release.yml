@@ -65,7 +65,7 @@ jobs:
         run: |
           set -ex
           mkdir -p pkgs/
-          for x in dist/*.apk; do cp $x pkgs/$(basename $x | sed s/_/-/ | sed s/-x86-64\.apk/-x86_64.apk/ ); done
+          for x in dist/*.apk; do cp $x pkgs/$(basename $x | sed s/_/-/g | sed s/-x86-64\.apk/-x86_64.apk/ ); done
           for x in dist/*.deb; do cp $x pkgs/; done
       - name: Push to apk repo
         uses: cpina/github-action-push-to-another-repository@main
