@@ -1,1 +1,1 @@
-ACMEDNSPROXY_OPTS=-a /etc/acmednsproxy/auth.yaml -p /etc/acmednsproxy/providers.yaml
+ACMEDNSPROXY_OPTS=-c /etc/acmednsproxy/acmednsproxy.yaml

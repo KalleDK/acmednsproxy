@@ -17,21 +17,15 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
+	"github.com/KalleDK/acmednsproxy/acmednsproxy/auth"
 	"github.com/spf13/cobra"
 )
 
 const output = `
 HTTPREQ_MODE=RAW \
 HTTPREQ_USERNAME=%s \
-HTTPREQ_PASSWORD=%s \
-HTTPREQ_ENDPOINT=http://%s:8080
-
-HTTPREQ_MODE=RAW \
-HTTPREQ_USERNAME=%s \
-HTTPREQ_PASSWORD=%s \
-HTTPREQ_ENDPOINT=https://%s:9090
+HTTPREQ_PASSWORD=%s
 
 `
 
@@ -77,7 +71,9 @@ var addCmd = &cobra.Command{
 			return err
 		}
 
-		if err := s.AddPermission(flags.User, password, flags.Domain); err != nil {
+		cred := auth.Credentials{Username: flags.User, Password: password}
+
+		if err := s.AddPermission(cred, flags.Domain); err != nil {
 			return err
 		}
 
@@ -85,12 +81,7 @@ var addCmd = &cobra.Command{
 			return err
 		}
 
-		hostname, err := os.Hostname()
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf(output, flags.User, password, hostname, flags.User, password, hostname)
+		fmt.Printf(output, flags.User, password)
 
 		return nil
 

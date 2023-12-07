@@ -32,7 +32,7 @@ var initCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		flags := initFlags
-		s := &simpleauth.SimpleUserAuthenticator{
+		s := &simpleauth.Authenticator{
 			Permissions: simpleauth.PermissionTable{},
 		}
 

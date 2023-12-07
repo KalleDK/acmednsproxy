@@ -18,6 +18,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/KalleDK/acmednsproxy/acmednsproxy/auth"
 	"github.com/spf13/cobra"
 )
 
@@ -64,7 +65,9 @@ var verifyCmd = &cobra.Command{
 			}
 		}
 
-		if err := s.VerifyPermissions(flags.User, flags.Password, flags.Domain); err != nil {
+		cred := auth.Credentials{Username: flags.User, Password: flags.Password}
+
+		if err := s.VerifyPermissions(cred, flags.Domain); err != nil {
 			fmt.Println("Not Ok!")
 		} else {
 			fmt.Println("Ok!")

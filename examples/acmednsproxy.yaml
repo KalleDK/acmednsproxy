@@ -1,19 +1,7 @@
 ---
-listenaddr: ":8080"
-authenticator:
-  type: simpleauth
-  config:
-    path: auth.yaml
-provider:
-  type: multi
-  config:
-    - type: cloudflare
-      domain: example.com
-      config:
-        zoneid: Zpe7L9jRCkag6PuNC6b5a17gMtf156Ozq7tsRfhk
-        authtoken: 7dZbonk5j5nDAq51Wd7nAuDF4rJl3FTQ_xYIrrKx
-    - type: cloudflare
-      domain: sub.example.com
-      config:
-        zoneid: Zpe7L9jRCkag6PuNC6b5a17gMtf156Ozq7tsRfhk
-        authtoken: 7dZbonk5j5nDAq51Wd7nAuDF4rJl3FTQ_xYIrrKx
+tls:
+  certfile: acmednsproxy.crt
+  certkey: acmednsproxy.key
+listen: ":8080"
+authenticator: auth.yaml
+provider: provider.yaml

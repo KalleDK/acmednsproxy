@@ -1,51 +1,144 @@
 package acmeserver
 
 import (
+	"context"
 	"log"
 	"net/http"
 
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/acmeservice"
 )
 
-type Settings struct {
-	Addr string
+type Server struct {
+	TLS        *TLSService
+	Proxy      *acmeservice.DNSProxy
+	HTTPServer *http.Server
+	Config     Config
 }
 
-type TLSSettings struct {
-	Addr     string
-	CertFile string
-	KeyFile  string
-}
-
-func Server(server *acmeservice.DNSProxy, addr string) (*http.Server, error) {
-	handler, err := NewHandler(server)
-	if err != nil {
-		return nil, err
+func (s *Server) Reload() error {
+	if err := s.TLS.Reload(); err != nil {
+		return err
 	}
-	return &http.Server{
-		Addr:    addr,
-		Handler: handler,
+
+	return s.Proxy.Reload()
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
+	return s.HTTPServer.Shutdown(ctx)
+}
+
+func (s *Server) Close() error {
+	return s.HTTPServer.Close()
+}
+
+func (s *Server) ServeTLS() error {
+	handler, err := NewHandler(s.Proxy, s.TLS)
+	if err != nil {
+		return err
+	}
+
+	return http.ListenAndServeTLS(s.Config.Listen, "", "", handler)
+}
+
+func (s *Server) Serve() error {
+	handler, err := NewHandler(s.Proxy, s.TLS)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return http.ListenAndServe(s.Config.Listen, handler)
+}
+
+func (s *Server) ListenAndServe() error {
+	if s.TLS == nil {
+		return s.Serve()
+	}
+	return s.ServeTLS()
+}
+
+func loadServer(path string) (server Server, err error) {
+	config, err := loadConfig(path)
+	if err != nil {
+		return
+	}
+
+	var tls *TLSService
+	if config.HasTLS() {
+		tls, err = NewTLSService(config.TLS)
+		if err != nil {
+			return
+		}
+	} else {
+		tls = nil
+	}
+
+	service, err := acmeservice.New(config.Proxy)
+	if err != nil {
+		return
+	}
+
+	return Server{
+		HTTPServer: nil,
+		Config:     config,
+		TLS:        tls,
+		Proxy:      service,
 	}, nil
 }
 
-func Serve(server *acmeservice.DNSProxy, settings Settings) {
-	handler, err := NewHandler(server)
-	if err != nil {
-		log.Panic(err)
+type ServerWithConfig struct {
+	ConfigFile string
+	IsClosing  bool
+	Server
+}
+
+func (s *ServerWithConfig) Reload(ctx context.Context) (err error) {
+	if s.IsClosing {
+		return http.ErrServerClosed
+	}
+	var new_server, old_server Server
+
+	if new_server, err = loadServer(s.ConfigFile); err != nil {
+		return err
 	}
 
-	if err := http.ListenAndServe(settings.Addr, handler); err != nil {
-		log.Panic(err)
+	old_server, s.Server = s.Server, new_server
+
+	old_server.Shutdown(ctx)
+
+	return nil
+}
+
+func (s *ServerWithConfig) Close() error {
+	s.IsClosing = true
+	return s.Server.Close()
+}
+
+func (s *ServerWithConfig) Shutdown(ctx context.Context) error {
+	s.IsClosing = true
+	return s.Server.Shutdown(ctx)
+}
+
+func (s *ServerWithConfig) ListenAndServe() error {
+	for {
+		if s.IsClosing {
+			return http.ErrServerClosed
+		}
+
+		if err := s.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			return err
+		}
 	}
 }
 
-func ServeTLS(server *acmeservice.DNSProxy, settings TLSSettings) {
-	handler, err := NewHandler(server)
+func NewServer(path string) (*ServerWithConfig, error) {
+	server, err := loadServer(path)
 	if err != nil {
-		log.Panic(err)
+		return nil, err
 	}
 
-	if err := http.ListenAndServeTLS(settings.Addr, settings.CertFile, settings.KeyFile, handler); err != nil {
-		log.Panic(err)
-	}
+	return &ServerWithConfig{
+		ConfigFile: path,
+		IsClosing:  false,
+		Server:     server,
+	}, nil
 }

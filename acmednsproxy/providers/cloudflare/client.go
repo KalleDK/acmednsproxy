@@ -55,11 +55,7 @@ func (m *apiClient) CreateDNSRecord(fqdn, value string) (string, error) {
 		return "", fmt.Errorf("cloudflare: failed to create TXT record: %w", err)
 	}
 
-	if !response.Success {
-		return "", fmt.Errorf("cloudflare: failed to create TXT record: %+v %+v", response.Errors, response.Messages)
-	}
-
-	return response.Result.ID, nil
+	return response.ID, nil
 }
 
 func (m *apiClient) DeleteDNSRecord(recordID string) error {
