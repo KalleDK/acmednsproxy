@@ -1,6 +1,6 @@
 module github.com/KalleDK/acmednsproxy
 
-go 1.21
+go 1.21.5
 
 require (
 	github.com/adrg/xdg v0.4.0
