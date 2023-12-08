@@ -37,7 +37,7 @@ func (c *TLSService) Reload() (err error) {
 
 	cert, err := loadCert(c.Config)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to load tls certificate %+v: %w", c.Config, err)
 	}
 
 	c.Certificate = cert
@@ -47,7 +47,7 @@ func (c *TLSService) Reload() (err error) {
 func NewTLSService(config TLSConfig) (*TLSService, error) {
 	cert, err := loadCert(config)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load tls certificate %+v: %w", config, err)
 	}
 
 	return &TLSService{

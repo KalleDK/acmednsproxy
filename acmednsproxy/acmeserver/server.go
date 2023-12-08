@@ -2,6 +2,8 @@ package acmeserver
 
 import (
 	"context"
+	"crypto/tls"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -34,10 +36,11 @@ func (s *Server) Close() error {
 func (s *Server) ServeTLS() error {
 	handler, err := NewHandler(s.Proxy, s.TLS)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create handler: %w", err)
 	}
-
-	return http.ListenAndServeTLS(s.Config.Listen, "", "", handler)
+	fmt.Println("Listening on", s.Config.Listen)
+	server := &http.Server{Addr: s.Config.Listen, Handler: handler, TLSConfig: &tls.Config{GetCertificate: s.TLS.GetCertificate}}
+	return server.ListenAndServeTLS("", "")
 }
 
 func (s *Server) Serve() error {
@@ -51,8 +54,10 @@ func (s *Server) Serve() error {
 
 func (s *Server) ListenAndServe() error {
 	if s.TLS == nil {
+		fmt.Println("No TLS Configured")
 		return s.Serve()
 	}
+	fmt.Println("TLS Configured")
 	return s.ServeTLS()
 }
 

@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -94,10 +95,13 @@ func getRecord(c *gin.Context) {
 
 func presentHandler(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		a := c.MustGet("auth").(auth.Credentials)
+		cred := c.MustGet("auth").(auth.Credentials)
 		record := c.MustGet("record").(providers.Record)
 
-		if err := proxy.Authenticate(a, record); err != nil {
+		log.Printf("Presenting %s for %s", record.Value, record.Fqdn)
+
+		if err := proxy.Authenticate(cred, record); err != nil {
+			log.Printf("Failed to authenticate %s for %s because %v", cred.Username, record.Fqdn, err)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}

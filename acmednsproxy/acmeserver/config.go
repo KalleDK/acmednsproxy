@@ -2,6 +2,7 @@ package acmeserver
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/acmeservice"
 	"gopkg.in/yaml.v3"
@@ -23,6 +24,8 @@ func (c Config) HasTLS() bool {
 }
 
 func loadConfig(path string) (config Config, err error) {
+	conf_dir := filepath.Dir(path)
+
 	r, err := os.Open(path)
 	if err != nil {
 		return
@@ -33,12 +36,30 @@ func loadConfig(path string) (config Config, err error) {
 		return
 	}
 
+	if config.HasTLS() {
+		if !filepath.IsAbs(config.TLS.CertFile) {
+			config.TLS.CertFile = filepath.Join(conf_dir, config.TLS.CertFile)
+		}
+
+		if !filepath.IsAbs(config.TLS.KeyFile) {
+			config.TLS.KeyFile = filepath.Join(conf_dir, config.TLS.KeyFile)
+		}
+	}
+
 	if config.Listen == "" {
 		if config.HasTLS() {
 			config.Listen = DefaultTLSAddr
 		} else {
 			config.Listen = DefaultAddr
 		}
+	}
+
+	if !filepath.IsAbs(config.Proxy.Provider) {
+		config.Proxy.Provider = filepath.Join(conf_dir, config.Proxy.Provider)
+	}
+
+	if !filepath.IsAbs(config.Proxy.Authenticator) {
+		config.Proxy.Authenticator = filepath.Join(conf_dir, config.Proxy.Authenticator)
 	}
 
 	return config, nil

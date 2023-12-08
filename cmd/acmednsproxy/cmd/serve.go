@@ -80,7 +80,7 @@ var serveCmd = &cobra.Command{
 
 		log.Print("Starting server...")
 
-		if err := server.Serve(); err != nil {
+		if err := server.ListenAndServe(); err != nil {
 			log.Print(err)
 		}
 

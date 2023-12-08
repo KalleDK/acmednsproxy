@@ -74,12 +74,12 @@ func (s *DNSProxy) Authenticate(cred auth.Credentials, record providers.Record) 
 	domain := record.Fqdn
 
 	if !strings.HasPrefix(domain, "_acme-challenge.") {
-		return fmt.Errorf("invalid challenge domain %s", record.Fqdn)
+		return fmt.Errorf("invalid challenge domain %s missing prefix", record.Fqdn)
 	}
 	domain = strings.TrimPrefix(domain, "_acme-challenge.")
 
 	if !strings.HasSuffix(domain, ".") {
-		return fmt.Errorf("invalid challenge domain %s", record.Fqdn)
+		return fmt.Errorf("invalid challenge domain %s missing . at end", record.Fqdn)
 	}
 	domain = strings.TrimSuffix(domain, ".")
 
