@@ -4,8 +4,8 @@ LABEL org.opencontainers.image.description="ACME DNS Proxy"
 
 ARG ADP_VERSION=0.1.52
 
-COPY dist/acmednsproxy_${ADP_VERSION}_x86_64.apk /tmp/acmednsproxy.apk
-COPY dist/acmednsproxy-tools_${ADP_VERSION}_x86_64.apk /tmp/acmednsproxy-tools.apk
+COPY pkgs/acmednsproxy_x86_64.apk /tmp/acmednsproxy.apk
+COPY pkgs/acmednsproxy-tools_x86_64.apk /tmp/acmednsproxy-tools.apk
 
 RUN apk add --no-cache --allow-untrusted /tmp/acmednsproxy.apk /tmp/acmednsproxy-tools.apk
 RUN mkdir -p /etc/acmednsproxy

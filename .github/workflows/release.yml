@@ -72,6 +72,11 @@ jobs:
         with:
           name: 'acmednsproxy-archive'
           path: dist
+      - name: Move apks
+        run: |
+          set -ex
+          mkdir -p pkgs/
+          for x in dist/*.apk; do cp $x pkgs/$(basename $x | sed 's/_[^_]*_/_/'  ); done
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
