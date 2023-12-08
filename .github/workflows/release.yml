@@ -31,27 +31,7 @@ jobs:
             ./dist/*.apk
             ./dist/*.deb
           if-no-files-found: error
-  upload-deb:
-    name: Upload Deb
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
-        with:
-          name: 'acmednsproxy-archive'
-          path: dist
-      - name: Upload Package
-        env:
-          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
-        run: |
-          set -ex
-          sudo gem install package_cloud
-          for pkg in $(find ./dist -name '*.deb')
-          do
-            package_cloud push KalleDK/debian/any/any $pkg
-          done
-  upload-apk:
+  upload-to-repo:
     name: Upload Apk
     needs: build
     runs-on: ubuntu-latest
