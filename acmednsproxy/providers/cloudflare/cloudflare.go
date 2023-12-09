@@ -75,7 +75,7 @@ func (d *DNSProvider) RemoveRecord(record providers.Record) error {
 		return fmt.Errorf("cloudflare: unknown record ID for '%s'", record)
 	}
 
-	if err := d.api.DeleteDNSRecord(recordID); err != nil {
+	if err := d.api.DeleteDNSRecord(recordID, record.Fqdn); err != nil {
 		log.Printf("cloudflare: failed to delete TXT record: %s", err)
 	}
 
