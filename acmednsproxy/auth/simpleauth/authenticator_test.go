@@ -218,21 +218,19 @@ func TestAuthLoadFromStream(t *testing.T) {
 }
 
 func TestAuthenticator_Shutdown(t *testing.T) {
-	type fields struct {
-		domains map[string]struct{}
-	}
+
 	type args struct {
 		ctx context.Context
 	}
 	tests := []struct {
-		name    string
-		fields  fields
+		name string
+
 		args    args
 		wantErr bool
 	}{
 		{
-			name:   "basic",
-			fields: fields{},
+			name: "basic",
+
 			args: args{
 				ctx: context.Background(),
 			},
