@@ -2,20 +2,9 @@ version: "2.4"
 
 services:
   server:
-    image: kalledk/acmednsproxy:latest
+    image: ghcr.io/kalledk/acmednsproxy:latest
     restart: always
     ports:
-    - "8080:8080"
     - "9090:9090"
     volumes:
-    - config:/etc/acmednsproxy
-  client:
-    profiles: ["cli-only"]
-    image: kalledk/acmednsproxy:latest
-    entrypoint: adpcrypt
-    working_dir: /etc/acmednsproxy
-    volumes:
-    - config:/etc/acmednsproxy
-
-volumes:
-  config:
+    - ./etc:/etc/acmednsproxy:ro

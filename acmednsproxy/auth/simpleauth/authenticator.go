@@ -2,6 +2,7 @@ package simpleauth
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/auth"
 	"golang.org/x/crypto/bcrypt"
@@ -53,16 +54,16 @@ func (a *Authenticator) RemovePermission(user string, domain string) (err error)
 func (a *Authenticator) VerifyPermissions(cred auth.Credentials, domain string) (err error) {
 	users, ok := a.Permissions[domain]
 	if !ok {
-		return auth.ErrUnauthorized
+		return fmt.Errorf("domain does not exists in auth %s %w", domain, auth.ErrUnauthorized)
 	}
 
 	encodedPassword, ok := users[cred.Username]
 	if !ok {
-		return auth.ErrUnauthorized
+		return fmt.Errorf("user does not exists in domain %s %s %w", cred.Username, domain, auth.ErrUnauthorized)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(encodedPassword), []byte(cred.Password)); err != nil {
-		return auth.ErrUnauthorized
+		return fmt.Errorf("password does not match %s %s %w", cred.Username, domain, auth.ErrUnauthorized)
 	}
 
 	return nil
