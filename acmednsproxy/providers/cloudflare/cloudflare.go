@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"sync"
+	"time"
 
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
 )
@@ -86,4 +88,37 @@ func (d *DNSProvider) Close() error { return nil }
 
 func (d *DNSProvider) Shutdown(ctx context.Context) error {
 	return d.Close()
+}
+
+func New(config Config) (*DNSProvider, error) {
+
+	ttl := minTTL
+	if config.TTL != nil {
+		ttl = *config.TTL
+	}
+
+	http_client := &http.Client{}
+	if config.HTTPTimeout != nil {
+		http_client.Timeout = time.Second * time.Duration(*config.HTTPTimeout)
+	}
+
+	api_config := APIConfig{
+		AuthToken:  config.AuthToken,
+		Zones:      config.Zones,
+		TTL:        ttl,
+		HTTPClient: http_client,
+	}
+
+	api, err := newAPIClient(&api_config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DNSProvider{
+		api: api,
+		records: recordDB{
+			values: map[string]string{},
+			mutex:  sync.Mutex{},
+		},
+	}, nil
 }

@@ -3,10 +3,7 @@ package cloudflare
 import (
 	"errors"
 	"io"
-	"net/http"
 	"os"
-	"sync"
-	"time"
 
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/auth"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
@@ -18,43 +15,10 @@ const (
 )
 
 type Config struct {
-	ZoneID      string
+	Zones       map[string]string
 	AuthToken   string
 	TTL         *int
 	HTTPTimeout *int
-}
-
-func New(config Config) (*DNSProvider, error) {
-
-	ttl := minTTL
-	if config.TTL != nil {
-		ttl = *config.TTL
-	}
-
-	http_client := &http.Client{}
-	if config.HTTPTimeout != nil {
-		http_client.Timeout = time.Second * time.Duration(*config.HTTPTimeout)
-	}
-
-	api_config := APIConfig{
-		AuthToken:  config.AuthToken,
-		ZoneID:     config.ZoneID,
-		TTL:        ttl,
-		HTTPClient: http_client,
-	}
-
-	api, err := newAPIClient(&api_config)
-	if err != nil {
-		return nil, err
-	}
-
-	return &DNSProvider{
-		api: api,
-		records: recordDB{
-			values: map[string]string{},
-			mutex:  sync.Mutex{},
-		},
-	}, nil
 }
 
 type yamlConfig struct {
