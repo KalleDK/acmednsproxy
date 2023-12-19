@@ -111,7 +111,7 @@ func presentHandler(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"status": "ok", "value": record.Value})
+		c.JSON(http.StatusOK, gin.H{"FQDN": record.Fqdn, "Value": record.Value})
 
 	}
 }
@@ -131,7 +131,7 @@ func cleanupHandler(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"status": "ok", "value": record.Value})
+		c.JSON(http.StatusOK, gin.H{"FQDN": record.Fqdn, "Value": record.Value})
 	}
 }
 
