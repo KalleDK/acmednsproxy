@@ -60,7 +60,7 @@ jobs:
           destination-github-username: 'KalleDK'
           destination-repository-name: 'registry'
           user-email: apk@k-moeller.dk
-          target-branch: main
+          target-branch: repo
           target-directory: pkgs/acmednsproxy
   upload-to-docker:
     name: Upload Docker
