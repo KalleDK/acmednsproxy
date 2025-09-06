@@ -1,7 +1,13 @@
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-#
+# This is an example .goreleaser.yml file with some sensible defaults.
 # Make sure to check the documentation at https://goreleaser.com
-#
+
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
 project_name: acmednsproxy
 
 before:
@@ -9,7 +15,7 @@ before:
     - go mod tidy
 
 snapshot:
-  name_template: "{{ .Version }}-next"
+  version_template: "{{ .Version }}-next"
 
 builds:
   - id: service
@@ -61,7 +67,7 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end -}}
     format_overrides:
       - goos: windows
-        format: zip
+        formats: ['zip']
     builds_info:
       group: root
       owner: root
@@ -78,7 +84,7 @@ nfpms:
     contents:
       - src: ./examples/*
         dst: /usr/share/doc/{{ .ProjectName }}/examples/
-    builds:
+    ids:
       - service
     formats:
       - deb
@@ -89,7 +95,7 @@ nfpms:
     maintainer: Kalle M. Aagaard <git@k-moeller.dk>
     license: MIT
     homepage: https://github.com/KalleDK/acmednsproxy
-    builds:
+    ids:
       - tool
     formats:
       - deb
