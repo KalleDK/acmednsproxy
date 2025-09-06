@@ -8,7 +8,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-acme/lego/v4 v4.14.2
 	github.com/golang-jwt/jwt/v5 v5.3.0
-	github.com/sethvargo/go-password v0.2.0
+	github.com/sethvargo/go-password v0.3.1
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/crypto v0.16.0
 	golang.org/x/term v0.15.0
