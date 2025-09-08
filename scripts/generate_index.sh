@@ -6,7 +6,7 @@ export REPO_NAME=${REPO_NAME:-acmednsproxy}
 export KEY_NAME=${KEY_NAME:-"alpine@k-moeller.dk-62068d1b.rsa.pub"}
 export REPO_DEST=${REPO_DEST:-./packages}
 
-cat << EOF > ${REPO_DEST}/${REPO_NAME}/index.md
+cat << EOF > "${REPO_DEST}"/"${REPO_NAME}"/index.md
 # ACME DNS Proxy
 
 \`\`\`bash

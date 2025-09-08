@@ -173,7 +173,7 @@ func testAuth(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
 		cred := c.MustGet("auth").(auth.Credentials)
 		domain := c.MustGet("domain").(string)
 
-		if err := proxy.Authenticate(cred, "_acme-challenge."+domain); err != nil {
+		if err := proxy.Authenticate(cred, "_acme-challenge."+domain+"."); err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
