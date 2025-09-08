@@ -2,8 +2,6 @@ package acmeservice
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/auth"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
@@ -71,16 +69,6 @@ func (s *DNSProxy) Reload() (err error) {
 }
 
 func (s *DNSProxy) Authenticate(cred auth.Credentials, domain string) error {
-
-	if !strings.HasPrefix(domain, "_acme-challenge.") {
-		return fmt.Errorf("invalid challenge domain %s missing prefix", domain)
-	}
-	domain = strings.TrimPrefix(domain, "_acme-challenge.")
-
-	if !strings.HasSuffix(domain, ".") {
-		return fmt.Errorf("invalid challenge domain %s missing . at end", domain)
-	}
-	domain = strings.TrimSuffix(domain, ".")
 
 	if err := s.Auth.VerifyPermissions(cred, domain); err != nil {
 		return err
