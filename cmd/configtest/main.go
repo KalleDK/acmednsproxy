@@ -33,8 +33,8 @@ func main() {
 
 	fmt.Println(dns01.GetRecord("sub.example.com", "token"))
 
-	fmt.Println(p.Authenticate(auth.Credentials{Username: "test", Password: "test"}, providers.Record{Fqdn: "_acme-challenge.sub.example.com.", Value: "PEaenWxYddN6Q_NT1PiOYfz4EsZu7jRXRlpAsNpBU-A"}))
-	fmt.Println(p.Authenticate(auth.Credentials{Username: "dsa", Password: "dsa"}, providers.Record{Fqdn: "examdple.com", Value: ""}))
+	fmt.Println(p.Authenticate(auth.Credentials{Username: "test", Password: "test"}, providers.Record{Fqdn: "_acme-challenge.sub.example.com.", Value: "PEaenWxYddN6Q_NT1PiOYfz4EsZu7jRXRlpAsNpBU-A"}.Fqdn))
+	fmt.Println(p.Authenticate(auth.Credentials{Username: "dsa", Password: "dsa"}, providers.Record{Fqdn: "examdple.com", Value: ""}.Fqdn))
 
 	fmt.Printf("%+v\n", p)
 }

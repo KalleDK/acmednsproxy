@@ -17,6 +17,10 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 )
 
+type domainTest struct {
+	Domain string `json:"domain"`
+}
+
 type combinedMessage struct {
 	Domain  string `json:"domain"`
 	Token   string `json:"token"`
@@ -54,13 +58,15 @@ func (c combinedMessage) as_record() (providers.Record, error) {
 
 func getBasicAuth(c *gin.Context) {
 
+	const authPrefix = "Basic "
+
 	h := c.GetHeader("Authorization")
-	if !strings.HasPrefix(h, "Basic ") {
+	if !strings.HasPrefix(h, authPrefix) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "missing auth"})
 		return
 	}
 
-	decodedAuthValue, err := base64.StdEncoding.DecodeString(h[6:])
+	decodedAuthValue, err := base64.StdEncoding.DecodeString(h[len(authPrefix):])
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -93,6 +99,20 @@ func getRecord(c *gin.Context) {
 	c.Set("record", msg)
 }
 
+func getDomain(c *gin.Context) {
+	var domainMsg domainTest
+	if err := c.ShouldBindJSON(&domainMsg); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if domainMsg.Domain == "" {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "missing domain"})
+		return
+	}
+	c.Set("domain", domainMsg.Domain)
+}
+
 func presentHandler(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		cred := c.MustGet("auth").(auth.Credentials)
@@ -100,7 +120,7 @@ func presentHandler(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
 
 		log.Printf("Presenting %s for %s", record.Value, record.Fqdn)
 
-		if err := proxy.Authenticate(cred, record); err != nil {
+		if err := proxy.Authenticate(cred, record.Fqdn); err != nil {
 			log.Printf("Failed to authenticate %s for %s because %v", cred.Username, record.Fqdn, err)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
@@ -121,7 +141,7 @@ func cleanupHandler(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
 		a := c.MustGet("auth").(auth.Credentials)
 		record := c.MustGet("record").(providers.Record)
 
-		if err := proxy.Authenticate(a, record); err != nil {
+		if err := proxy.Authenticate(a, record.Fqdn); err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
@@ -148,6 +168,20 @@ func reloadHandler(proxy *acmeservice.DNSProxy, cert *TLSService) func(c *gin.Co
 	}
 }
 
+func testAuth(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		cred := c.MustGet("auth").(auth.Credentials)
+		domain := c.MustGet("domain").(string)
+
+		if err := proxy.Authenticate(cred, "_acme-challenge."+domain); err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	}
+}
+
 func pong(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"pong": time.Now().String(),
@@ -161,6 +195,7 @@ func NewHandler(p *acmeservice.DNSProxy, cert *TLSService) (handler http.Handler
 	router := gin.Default()
 
 	router.GET("/ping", pong)
+	router.POST("/domain", getBasicAuth, getDomain, testAuth(p))
 	router.POST("/present", getBasicAuth, getRecord, presentHandler(p))
 	router.POST("/cleanup", getBasicAuth, getRecord, cleanupHandler(p))
 	router.POST("/reload", reloadHandler(p, cert))

@@ -70,16 +70,15 @@ func (s *DNSProxy) Reload() (err error) {
 	return nil
 }
 
-func (s *DNSProxy) Authenticate(cred auth.Credentials, record providers.Record) error {
-	domain := record.Fqdn
+func (s *DNSProxy) Authenticate(cred auth.Credentials, domain string) error {
 
 	if !strings.HasPrefix(domain, "_acme-challenge.") {
-		return fmt.Errorf("invalid challenge domain %s missing prefix", record.Fqdn)
+		return fmt.Errorf("invalid challenge domain %s missing prefix", domain)
 	}
 	domain = strings.TrimPrefix(domain, "_acme-challenge.")
 
 	if !strings.HasSuffix(domain, ".") {
-		return fmt.Errorf("invalid challenge domain %s missing . at end", record.Fqdn)
+		return fmt.Errorf("invalid challenge domain %s missing . at end", domain)
 	}
 	domain = strings.TrimSuffix(domain, ".")
 
