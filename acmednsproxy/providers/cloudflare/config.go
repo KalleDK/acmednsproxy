@@ -1,13 +1,8 @@
 package cloudflare
 
 import (
-	"errors"
-	"io"
-	"os"
-
-	"github.com/KalleDK/acmednsproxy/acmednsproxy/auth"
 	"github.com/KalleDK/acmednsproxy/acmednsproxy/providers"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -21,39 +16,19 @@ type Config struct {
 	HTTPTimeout *int
 }
 
-type yamlConfig struct {
-	Type   providers.Type
-	Config `yaml:",inline"`
-}
-
-func LoadFromDecoder(dec auth.Decoder) (p *DNSProvider, err error) {
-	var config yamlConfig
+func loadFromDecoder(dec *yaml.Node) (p *DNSProvider, err error) {
+	var config Config
 	if err = dec.Decode(&config); err != nil {
 		return
 	}
 
-	if config.Type != Cloudflare {
-		return nil, errors.New("invalid cloudflare " + string(config.Type))
-	}
-	return New(config.Config)
+	return New(config)
 }
 
-func LoadFromStream(r io.Reader) (d *DNSProvider, err error) {
-	return LoadFromDecoder(yaml.NewDecoder(r))
-}
-
-func LoadFromFile(path string) (p *DNSProvider, err error) {
-	r, err := os.Open(path)
-	if err != nil {
-		return
-	}
-	return LoadFromStream(r)
-}
-
-func wrappedLoad(dec providers.Decoder) (providers.DNSProvider, error) {
-	return LoadFromDecoder(dec)
+func load(dec *yaml.Node) (providers.DNSProvider, error) {
+	return loadFromDecoder(dec)
 }
 
 func init() {
-	Cloudflare.Register(wrappedLoad)
+	providers.Register(Cloudflare, load)
 }

@@ -15,7 +15,7 @@ type Config struct {
 type DNSProxy struct {
 	Config   Config
 	Auth     auth.Authenticator
-	Provider providers.DNSProvider
+	Provider *providers.DNSProviders
 }
 
 func (s *DNSProxy) Shutdown(ctx context.Context) error {
@@ -44,7 +44,7 @@ func (s *DNSProxy) Close() error {
 
 func (s *DNSProxy) Reload() (err error) {
 	var old_auth, new_auth auth.Authenticator
-	var old_prov, new_prov providers.DNSProvider
+	var old_prov, new_prov *providers.DNSProviders
 
 	if new_auth, err = auth.LoadFromFile(s.Config.Authenticator); err != nil {
 		return err
@@ -94,7 +94,7 @@ func (s *DNSProxy) Cleanup(record providers.Record) error {
 
 func New(config Config) (proxy *DNSProxy, err error) {
 	var a auth.Authenticator
-	var prov providers.DNSProvider
+	var prov *providers.DNSProviders
 
 	if a, err = auth.LoadFromFile(config.Authenticator); err != nil {
 		return

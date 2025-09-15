@@ -48,8 +48,9 @@ func (d *DNSProvider) CreateRecord(record providers.Record) error {
 	return nil
 }
 
-func (d *DNSProvider) doPost(uri string, msg interface{}) error {
+func (d *DNSProvider) doPost(uri string, msg any) error {
 	reqBody := &bytes.Buffer{}
+
 	err := json.NewEncoder(reqBody).Encode(msg)
 	if err != nil {
 		return err
@@ -90,6 +91,10 @@ func (d *DNSProvider) doPost(uri string, msg interface{}) error {
 	return nil
 }
 
+func (d *DNSProvider) CanHandle(domain string) bool {
+	return true
+}
+
 func (d *DNSProvider) Close() error { return nil }
 
 func (d *DNSProvider) Shutdown(ctx context.Context) error {
@@ -119,3 +124,5 @@ func New(config Config) (p *DNSProvider, err error) {
 		HTTPClient: client,
 	}, nil
 }
+
+var _ providers.DNSProvider = (*DNSProvider)(nil)

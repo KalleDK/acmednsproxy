@@ -50,6 +50,7 @@ func (r *recordDB) Delete(name string) {
 type DNSProvider struct {
 	api     *apiClient
 	records recordDB
+	domains map[string]struct{}
 }
 
 func (d *DNSProvider) CreateRecord(record providers.Record) error {
@@ -84,6 +85,11 @@ func (d *DNSProvider) RemoveRecord(record providers.Record) error {
 	return nil
 }
 
+func (d *DNSProvider) CanHandle(domain string) bool {
+	_, ok := d.domains[domain]
+	return ok
+}
+
 func (d *DNSProvider) Close() error { return nil }
 
 func (d *DNSProvider) Shutdown(ctx context.Context) error {
@@ -114,11 +120,19 @@ func New(config Config) (*DNSProvider, error) {
 		return nil, err
 	}
 
+	domains := map[string]struct{}{}
+	for _, zone := range config.Zones {
+		domains[zone] = struct{}{}
+	}
+
 	return &DNSProvider{
 		api: api,
 		records: recordDB{
 			values: map[string]string{},
 			mutex:  sync.Mutex{},
 		},
+		domains: domains,
 	}, nil
 }
+
+var _ providers.DNSProvider = (*DNSProvider)(nil)

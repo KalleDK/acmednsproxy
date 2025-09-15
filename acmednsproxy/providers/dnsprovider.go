@@ -6,9 +6,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
+	"github.com/go-acme/lego/v4/challenge/dns01"
 	"gopkg.in/yaml.v3"
 )
+
+// #region Record
 
 type Record struct {
 	Fqdn  string
@@ -19,74 +23,140 @@ func (r Record) Token() string {
 	return fmt.Sprintf("%s=%s", r.Fqdn, r.Value)
 }
 
+// #endregion
+
 type DNSProvider interface {
 	io.Closer
 	Shutdown(ctx context.Context) error
 	CreateRecord(record Record) error
 	RemoveRecord(record Record) error
+	CanHandle(domain string) bool
 }
 
-type Decoder interface {
-	Decode(v interface{}) error
-}
+type DNSProviderLoader func(dec *yaml.Node) (DNSProvider, error)
+
+// #region Type
 
 type Type string
 
-type Loader func(dec Decoder) (DNSProvider, error)
+var providerMap = map[Type]DNSProviderLoader{}
 
-var providerMap = map[Type]Loader{}
-
-func (t Type) Register(loader Loader) {
+func Register(t Type, loader DNSProviderLoader) {
+	if _, exists := providerMap[t]; exists {
+		panic("provider " + string(t) + " already registered")
+	}
 	providerMap[t] = loader
 }
 
-func (u Type) LoadFromDecoder(dec Decoder) (p DNSProvider, err error) {
-	loader, ok := providerMap[u]
+func (t Type) load(dec *yaml.Node) (p DNSProvider, err error) {
+	loader, ok := providerMap[t]
 	if !ok {
-		return nil, errors.New("invalid provider " + string(u))
+		return nil, errors.New("invalid provider " + string(t))
 	}
 	return loader(dec)
 }
 
-func (u Type) LoadFromStream(r io.Reader) (p DNSProvider, err error) {
-	return u.LoadFromDecoder(yaml.NewDecoder(r))
-}
+// #endregion
 
-func (u Type) LoadFromFile(path string) (p DNSProvider, err error) {
-	r, err := os.Open(path)
-	if err != nil {
-		return
-	}
-	return u.LoadFromStream(r)
-}
+// #region Config
 
 type yamlConfig struct {
 	Type Type `yaml:"type"`
 }
 
-func LoadFromDecoder(dec Decoder) (p DNSProvider, err error) {
-	var node yaml.Node
-	var config yamlConfig
+func loadFromDecoder(dec *yaml.Decoder) (*DNSProviders, error) {
+	var raw_configs []yaml.Node
+	provider := DNSProviders{}
 
-	if err = dec.Decode(&node); err != nil {
-		return
+	if err := dec.Decode(&raw_configs); err != nil {
+		return nil, err
 	}
 
-	if err = node.Decode(&config); err != nil {
-		return
+	for _, node := range raw_configs {
+		var config yamlConfig
+		if err := node.Decode(&config); err != nil {
+			return nil, err
+		}
+		subprovider, err := config.Type.load(&node)
+		if err != nil {
+			return nil, err
+		}
+		provider.providers = append(provider.providers, subprovider)
 	}
 
-	return config.Type.LoadFromDecoder(&node)
+	return &provider, nil
 }
 
-func LoadFromStream(r io.Reader) (p DNSProvider, err error) {
-	return LoadFromDecoder(yaml.NewDecoder(r))
+func LoadFromStream(r io.Reader) (p *DNSProviders, err error) {
+	return loadFromDecoder(yaml.NewDecoder(r))
 }
 
-func LoadFromFile(path string) (p DNSProvider, err error) {
+func LoadFromFile(path string) (p *DNSProviders, err error) {
 	r, err := os.Open(path)
 	if err != nil {
 		return
 	}
 	return LoadFromStream(r)
+}
+
+// #endregion
+
+type DNSProviders struct {
+	providers []DNSProvider
+}
+
+func (mp *DNSProviders) getProvider(domain string) (p DNSProvider, err error) {
+	domain_parts := strings.Split(domain, ".")
+	for len(domain_parts) > 0 {
+		domain_stub := strings.Join(domain_parts, ".")
+		for _, sp := range mp.providers {
+			if sp.CanHandle(domain_stub) {
+				return sp, nil
+			}
+		}
+		domain_parts = domain_parts[1:]
+	}
+	return nil, errors.New("no matching provider")
+}
+
+func (mp *DNSProviders) RemoveRecord(record Record) error {
+	domain := dns01.UnFqdn(record.Fqdn)
+	sp, err := mp.getProvider(domain)
+	if err != nil {
+		return err
+	}
+
+	if err = sp.RemoveRecord(record); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (mp *DNSProviders) CreateRecord(record Record) error {
+	domain := dns01.UnFqdn(record.Fqdn)
+	sp, err := mp.getProvider(domain)
+	if err != nil {
+		return err
+	}
+
+	if err = sp.CreateRecord(record); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (mp *DNSProviders) Close() error {
+	var err error = nil
+	for _, sp := range mp.providers {
+		if err_s := sp.Close(); err_s != nil {
+			err = err_s
+		}
+	}
+	return err
+}
+
+func (mp *DNSProviders) Shutdown(ctx context.Context) error {
+	return mp.Close()
 }
