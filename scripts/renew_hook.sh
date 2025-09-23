@@ -1,29 +1,34 @@
 #!/usr/bin/env sh
 
-set -e
+set -exuo pipefail
 
 MAIL=acme@example.com
 
-export HTTPREQ_MODE=RAW
-export HTTPREQ_USERNAME=
-export HTTPREQ_PASSWORD=
-HTTPREQ_ENDPOINT=https://ns03.example.com:9090
+NS_USERNAME=user
+NS_PASSWORD=password
+NS_SERVER=ns03.example.com
+NS_ENDPOINT=https://$NS_SERVER:9090
+
+HOOK="ipmi-certupdater -c /root/nas04.ilo/ipmiconfig.yml"
+
+TARGET_NAME=nas04.ilo
+TARGET_DOMAIN=nas04.ilo.example.com
 
 first=0
-testserver=""
+acme_server=https://acme-v02.api.letsencrypt.org/directory
 days=45
 
 
 while getopts "rtkf" o; do
     case "${o}" in
         k)
-            HTTPREQ_ENDPOINT=http://ns03.example.com:8080
+            NS_ENDPOINT=http://$NS_SERVER:8080
             ;;
         r)
             first="first"
             ;;
         t)
-            testserver=" --server=https://acme-staging-v02.api.letsencrypt.org/directory "
+            acme_server=https://acme-staging-v02.api.letsencrypt.org/directory
             ;;
         f)
             days=90
@@ -33,13 +38,18 @@ while getopts "rtkf" o; do
            ;;
     esac
 done
-export HTTPREQ_ENDPOINT
-echo $HTTPREQ_ENDPOINT
+export HTTPREQ_MODE=RAW
+export HTTPREQ_USERNAME="${NS_USERNAME}"
+export HTTPREQ_PASSWORD="${NS_PASSWORD}"
+export HTTPREQ_ENDPOINT="${NS_ENDPOINT}"
+echo "${HTTPREQ_ENDPOINT}"
+
+LEGO="lego --server=$acme_server --path=/var/lib/lego/$TARGET_NAME --email=$MAIL --dns=httpreq --key-type=rsa2048"
+
 wget -q -O - $HTTPREQ_ENDPOINT/ping
+curl --request POST --url $HTTPREQ_ENDPOINT/domain --user "$HTTPREQ_USERNAME:$HTTPREQ_PASSWORD" --data '{"domain": "nas04.ilo.krypto.dk"}'
 if [ "first" = "$first" ]; then
-echo lego "$testserver" --path=/var/lib/lego/nas04.ilo --email="$MAIL" --accept-tos --domains="nas04.ilo.example.com" --dns="httpreq" --key-type="rsa2048" run --run-hook="ipmi-certupdater -c /root/nas04.ilo/ipmiconfig.yml"
-lego "$testserver" --path=/var/lib/lego/nas04.ilo --email="$MAIL" --accept-tos --domains="nas04.ilo.example.com" --dns="httpreq" --key-type="rsa2048" run --run-hook="ipmi-certupdater -c /root/nas04.ilo/ipmiconfig.yml"
+$LEGO --accept-tos --domains="$TARGET_DOMAIN" run --run-hook="$HOOK"
 else
-echo lego "$testserver" --path=/var/lib/lego/nas04.ilo --email="$MAIL" --domains="nas04.ilo.example.com" --dns="httpreq" --key-type=rsa2048 renew --days=$days --renew-hook="ipmi-certupdater -c /root/nas04.ilo/ipmiconfig.yml"
-lego "$testserver" --path=/var/lib/lego/nas04.ilo --email="$MAIL" --domains="nas04.ilo.example.com" --dns="httpreq" --key-type=rsa2048 renew --days=$days --renew-hook="ipmi-certupdater -c /root/nas04.ilo/ipmiconfig.yml"
+$LEGO --domains="$TARGET_DOMAIN" renew --days=$days --renew-hook="$HOOK"
 fi;

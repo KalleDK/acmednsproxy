@@ -1,0 +1,23 @@
+on:
+  pull_request:
+    branches:
+    - main
+    
+
+name: Make Snapshot
+jobs:
+  gorelease:
+    name: Build Binary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+           go-version-file: 'go.mod'
+      - name: Build packages
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: release --clean --snapshot
+      

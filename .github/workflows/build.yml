@@ -1,32 +1,52 @@
 on:
   push:
     branches:
-    - main
-  pull_request:
-    branches:
-    - main
-    
+      - main
 
 name: Make Snapshot
 jobs:
-  gorelease:
+  dependency_submission:
+    name: Submit Dependencies
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: "go.mod"
+      
+      - name: Run snapshot action
+        uses: actions/go-dependency-submission@v2
+        with:
+          go-mod-path: go.mod
+      
+  build:
     name: Build Binary
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-go@v6
+      - name: Checkout code
+        uses: actions/checkout@v5
+      
+      - name: Set up Go
+        uses: actions/setup-go@v6
         with:
-           go-version-file: 'go.mod'
+          go-version-file: "go.mod"
+      
       - name: Build packages
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
-          version: '~> v2'
+          version: "~> v2"
           args: release --clean --snapshot
+      
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 'acmednsproxy-archive'
+          name: "acmednsproxy-archive"
           path: |
             ./dist/*.zip
             ./dist/*.tar.gz
