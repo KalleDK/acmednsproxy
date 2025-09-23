@@ -3,7 +3,7 @@ on:
     branches:
       - main
 
-name: Make Snapshot
+name: Make Build
 jobs:
   dependency_submission:
     name: Submit Dependencies
