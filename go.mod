@@ -8,7 +8,7 @@ require (
 	github.com/adrg/xdg v0.5.3
 	github.com/cloudflare/cloudflare-go v0.116.0
 	github.com/gin-gonic/gin v1.11.0
-	github.com/go-acme/lego/v4 v4.27.0
+	github.com/go-acme/lego/v4 v4.28.1
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/sethvargo/go-password v0.3.1
 	github.com/spf13/cobra v1.10.1
