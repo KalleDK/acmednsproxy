@@ -17,10 +17,17 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 )
 
+// domainTest is the JSON body expected by the /domain endpoint.
 type domainTest struct {
 	Domain string `json:"domain"`
 }
 
+// combinedMessage is the JSON body accepted by /present and /cleanup.
+// It supports two modes:
+//   - RAW mode: Domain + Token + KeyAuth are provided; the FQDN and TXT value
+//     are derived using dns01.GetRecord.
+//   - Default mode: FQDN + Value are provided directly (e.g. from lego's
+//     httpreq provider in default mode).
 type combinedMessage struct {
 	Domain  string `json:"domain"`
 	Token   string `json:"token"`
@@ -29,23 +36,27 @@ type combinedMessage struct {
 	Value   string `json:"value"`
 }
 
-func (c combinedMessage) is_raw() bool {
+// isRaw reports whether the message is in RAW mode.
+func (c combinedMessage) isRaw() bool {
 	return c.Domain != "" && c.Token != "" && c.KeyAuth != ""
 }
 
-func (c combinedMessage) is_default() bool {
+// isDefault reports whether the message is in default (pre-computed) mode.
+func (c combinedMessage) isDefault() bool {
 	return c.FQDN != "" && c.Value != ""
 }
 
-func (c combinedMessage) as_record() (providers.Record, error) {
-	if c.is_default() {
+// asRecord converts the message into a providers.Record, computing the FQDN
+// and value from the raw fields if necessary.
+func (c combinedMessage) asRecord() (providers.Record, error) {
+	if c.isDefault() {
 		return providers.Record{
 			Fqdn:  c.FQDN,
 			Value: c.Value,
 		}, nil
 	}
 
-	if c.is_raw() {
+	if c.isRaw() {
 		fqdn, value := dns01.GetRecord(c.Domain, c.KeyAuth)
 		return providers.Record{
 			Fqdn:  fqdn,
@@ -56,6 +67,8 @@ func (c combinedMessage) as_record() (providers.Record, error) {
 	return providers.Record{}, errors.New("is not a valid request")
 }
 
+// getBasicAuth extracts and decodes the HTTP Basic-Auth credentials from the
+// Authorization header.
 func getBasicAuth(c *gin.Context) (auth.Credentials, error) {
 	const authPrefix = "Basic "
 
@@ -72,7 +85,6 @@ func getBasicAuth(c *gin.Context) (auth.Credentials, error) {
 	parts := bytes.SplitN(decodedAuthValue, []byte(":"), 2)
 	if len(parts) != 2 {
 		return auth.Credentials{}, errors.New("invalid auth header")
-
 	}
 
 	return auth.Credentials{
@@ -81,9 +93,11 @@ func getBasicAuth(c *gin.Context) (auth.Credentials, error) {
 	}, nil
 }
 
+// verifyAuth is a gin middleware that reads the Basic-Auth credentials from
+// the request and verifies them against the proxy's authenticator for the
+// domain stored in the gin context by getDomain or getRecord.
 func verifyAuth(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
 	return func(c *gin.Context) {
-
 		domain := c.MustGet("domain").(string)
 
 		cred, err := getBasicAuth(c)
@@ -98,10 +112,13 @@ func verifyAuth(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
 		}
 
 		c.Set("auth", cred)
-
 	}
 }
 
+// getRecord is a gin middleware that parses the request body as a
+// combinedMessage, converts it to a providers.Record, validates the ACME
+// challenge domain format, and stores both "domain" and "record" in the gin
+// context for subsequent handlers.
 func getRecord(c *gin.Context) {
 	var combinedMsg combinedMessage
 	if err := c.ShouldBindJSON(&combinedMsg); err != nil {
@@ -109,11 +126,12 @@ func getRecord(c *gin.Context) {
 		return
 	}
 
-	msg, err := combinedMsg.as_record()
+	msg, err := combinedMsg.asRecord()
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	domain := msg.Fqdn
 	if !strings.HasPrefix(domain, "_acme-challenge.") {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("invalid challenge domain %s missing prefix", domain)})
@@ -131,6 +149,8 @@ func getRecord(c *gin.Context) {
 	c.Set("record", msg)
 }
 
+// getDomain is a gin middleware that parses the request body as a domainTest
+// and stores the domain in the gin context.
 func getDomain(c *gin.Context) {
 	var domainMsg domainTest
 	if err := c.ShouldBindJSON(&domainMsg); err != nil {
@@ -145,9 +165,10 @@ func getDomain(c *gin.Context) {
 	c.Set("domain", domainMsg.Domain)
 }
 
+// presentHandler is the gin handler for POST /present.  It reads the record
+// from the context (set by getRecord) and calls proxy.Present.
 func presentHandler(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
 	return func(c *gin.Context) {
-
 		record := c.MustGet("record").(providers.Record)
 
 		log.Printf("Presenting %s for %s", record.Value, record.Fqdn)
@@ -158,13 +179,13 @@ func presentHandler(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"FQDN": record.Fqdn, "Value": record.Value})
-
 	}
 }
 
+// cleanupHandler is the gin handler for POST /cleanup.  It reads the record
+// from the context (set by getRecord) and calls proxy.Cleanup.
 func cleanupHandler(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
 	return func(c *gin.Context) {
-
 		record := c.MustGet("record").(providers.Record)
 
 		if err := proxy.Cleanup(record); err != nil {
@@ -176,6 +197,10 @@ func cleanupHandler(proxy *acmeservice.DNSProxy) func(c *gin.Context) {
 	}
 }
 
+// reloadHandler is the gin handler for POST /reload.  It triggers an in-place
+// reload of the DNS proxy configuration and the TLS certificate.
+// Note: this endpoint is unauthenticated; restrict access via network policy
+// or firewall rules as appropriate.
 func reloadHandler(proxy *acmeservice.DNSProxy, cert *TLSService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		if err := proxy.Reload(); err != nil {
@@ -189,6 +214,8 @@ func reloadHandler(proxy *acmeservice.DNSProxy, cert *TLSService) func(c *gin.Co
 	}
 }
 
+// testAuth is the gin handler for POST /domain.  It responds with the
+// authenticated user and domain, confirming that the credentials are valid.
 func testAuth(c *gin.Context) {
 	domain := c.MustGet("domain").(string)
 	cred := c.MustGet("auth").(auth.Credentials)
@@ -196,15 +223,24 @@ func testAuth(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "domain": domain, "user": cred.Username})
 }
 
+// pong is the gin handler for GET /ping.  It returns the current server time
+// and can be used as a liveness probe.
 func pong(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"pong": time.Now().String(),
 	})
 }
 
+// NewHandler constructs the gin router with all routes configured.
+//
+// Routes:
+//
+//	GET  /ping    – liveness probe
+//	POST /domain  – verify credentials for a domain
+//	POST /present – publish a DNS-01 TXT record
+//	POST /cleanup – remove a DNS-01 TXT record
+//	POST /reload  – reload proxy config and TLS certificate (unauthenticated)
 func NewHandler(p *acmeservice.DNSProxy, cert *TLSService) (handler http.Handler, err error) {
-	// Creates a gin router with default middleware:
-	// logger and recovery (crash-free) middleware
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
